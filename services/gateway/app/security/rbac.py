@@ -31,7 +31,7 @@ ROLE_PERMISSIONS: Dict[str, List[str]] = {
         "evidence:read", "trust:read"
     ],
     "MODEL_OPERATOR": [
-        "model:operate", "model:reset",
+        "model:operate", "model:reset", "contamination:check",
         "evaluation:control",
         "evidence:read", "trust:read"
     ],
