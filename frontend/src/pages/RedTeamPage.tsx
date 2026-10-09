@@ -30,7 +30,9 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
   const [modalAttackId, setModalAttackId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadData();
+    if (evaluationId) {
+      loadData();
+    }
   }, [evaluationId]);
 
   const loadData = async () => {
@@ -83,12 +85,12 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold font-mono text-white">RED TEAM ADVERSARIAL WORKSPACE</h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-bold">
+            <h2 className="text-xl font-bold font-mono text-slate-900">RED TEAM ADVERSARIAL WORKSPACE</h2>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-red-700 border border-red-200 font-bold">
               CONTROLLED ENVIRONMENT
             </span>
           </div>
-          <p className="text-xs text-bayora-textMuted mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5">
             Execute adversarial test vectors. Raw exploit payloads are vaulted and redacted from Blue Team views.
           </p>
         </div>
@@ -98,17 +100,17 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Custom Prompt Runner & Execution Result */}
         <div className="lg:col-span-2 space-y-4">
-          <form onSubmit={handleExecute} className="p-5 rounded-2xl bg-bayora-card border border-bayora-border space-y-4">
-            <div className="flex items-center justify-between border-b border-bayora-border pb-3">
-              <span className="text-xs font-mono font-semibold text-white flex items-center gap-2">
-                <Swords className="w-4 h-4 text-rose-400" />
+          <form onSubmit={handleExecute} className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <span className="text-xs font-mono font-bold text-slate-900 flex items-center gap-2">
+                <Swords className="w-4 h-4 text-red-600" />
                 <span>ADVERSARIAL PAYLOAD GENERATOR</span>
               </span>
               <div className="flex items-center gap-2">
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="bg-bayora-bg border border-bayora-border text-[11px] font-mono text-cyan-300 rounded px-2 py-1"
+                  className="bg-slate-50 border border-slate-200 text-[11px] font-mono text-slate-800 rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="prompt_injection">Prompt Injection</option>
                   <option value="instruction_override">Instruction Override</option>
@@ -123,7 +125,7 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
                 <select
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value)}
-                  className="bg-bayora-bg border border-bayora-border text-[11px] font-mono text-rose-300 rounded px-2 py-1"
+                  className="bg-slate-50 border border-slate-200 text-[11px] font-mono text-red-700 font-semibold rounded-lg px-2.5 py-1 focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="CRITICAL">CRITICAL</option>
                   <option value="HIGH">HIGH</option>
@@ -134,7 +136,7 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
             </div>
 
             <div>
-              <label className="text-[11px] font-mono text-slate-400 block mb-1">
+              <label className="text-[11px] font-mono text-slate-700 font-semibold block mb-1">
                 ADVERSARIAL PROMPT PAYLOAD (CONFIDENTIAL)
               </label>
               <textarea
@@ -142,19 +144,19 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
                 value={selectedPrompt}
                 onChange={(e) => setSelectedPrompt(e.target.value)}
                 placeholder="Enter adversarial prompt vector..."
-                className="w-full bg-bayora-bg border border-bayora-border rounded-xl p-3 text-xs font-mono text-white focus:outline-none focus:border-bayora-accent leading-relaxed"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white leading-relaxed"
               />
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <span className="text-[10px] font-mono text-bayora-textMuted flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[10px] font-mono text-slate-500 flex items-center gap-1.5 font-medium">
+                <Lock className="w-3.5 h-3.5 text-amber-600" />
                 <span>PAYLOAD CONFIDENTIAL — VAULTED IN AUDIT REPOSITORY</span>
               </span>
               <button
                 type="submit"
                 disabled={isExecuting}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white text-xs font-mono font-bold transition-all shadow-lg shadow-rose-500/20 flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-mono font-bold transition-all shadow-md shadow-red-500/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Play className={`w-3.5 h-3.5 ${isExecuting ? 'animate-spin' : ''}`} />
                 <span>{isExecuting ? 'INTERCEPTING & EXECUTING...' : 'LAUNCH ATTACK VECTOR'}</span>
@@ -164,32 +166,32 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
 
           {/* Last Result Box */}
           {lastResult && (
-            <div className="p-5 rounded-2xl bg-bayora-card border border-bayora-border space-y-3 animate-fade-in">
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card space-y-3 animate-fade-in">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-mono font-bold text-white flex items-center gap-2">
+                <span className="text-xs font-mono font-bold text-slate-900 flex items-center gap-2">
                   <span>EXECUTION RESULT</span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold ${
                     lastResult.result_class === 'BLOCKED'
-                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                       : lastResult.result_class === 'VULNERABLE'
-                      ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                      : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                      ? 'bg-red-100 text-red-800 border border-red-200'
+                      : 'bg-blue-100 text-blue-800 border border-blue-200'
                   }`}>
                     {lastResult.result_class}
                   </span>
                 </span>
-                <span className="text-[11px] font-mono text-slate-400">
-                  Latency: {lastResult.latency_ms}ms | Session: {lastResult.session_id}
+                <span className="text-[11px] font-mono text-slate-500">
+                  Latency: {lastResult.latency_ms}ms &bull; Session: {lastResult.session_id}
                 </span>
               </div>
 
-              <div className="p-3 rounded-xl bg-bayora-bg border border-bayora-border text-xs font-mono text-slate-200 leading-relaxed">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 leading-relaxed">
                 {lastResult.response}
               </div>
 
               {lastResult.blocked_by && (
-                <div className="text-[11px] font-mono text-emerald-400">
-                  Interception Rule: <span className="font-semibold">{lastResult.blocked_by}</span>
+                <div className="text-[11px] font-mono text-emerald-700 font-semibold">
+                  Interception Rule: <span className="font-bold">{lastResult.blocked_by}</span>
                 </div>
               )}
             </div>
@@ -197,9 +199,9 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
         </div>
 
         {/* Right Col: Attack Scenario Library */}
-        <div className="p-5 rounded-2xl bg-bayora-card border border-bayora-border space-y-3">
-          <div className="flex items-center gap-2 text-white font-mono text-xs font-semibold">
-            <BookOpen className="w-4 h-4 text-cyan-400" />
+        <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card space-y-3">
+          <div className="flex items-center gap-2 text-slate-900 font-mono text-xs font-bold">
+            <BookOpen className="w-4 h-4 text-blue-600" />
             <span>ATTACK SCENARIO LIBRARY</span>
           </div>
           <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
@@ -207,17 +209,17 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
               <div
                 key={item.id}
                 onClick={() => handleSelectFromLibrary(item)}
-                className="p-3 rounded-xl bg-bayora-bg hover:bg-bayora-cardHover border border-bayora-border/70 hover:border-bayora-accent cursor-pointer transition-all space-y-1 group"
+                className="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-blue-300 cursor-pointer transition-all space-y-1 group"
               >
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-mono font-semibold text-white group-hover:text-cyan-300">
+                  <span className="font-mono font-bold text-slate-900 group-hover:text-blue-600">
                     {item.name}
                   </span>
-                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300">
+                  <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-red-100 text-red-700 font-bold">
                     {item.severity}
                   </span>
                 </div>
-                <p className="text-[11px] text-bayora-textMuted line-clamp-2">
+                <p className="text-[11px] text-slate-600 line-clamp-2">
                   {item.description}
                 </p>
               </div>
@@ -227,59 +229,67 @@ export const RedTeamPage: React.FC<RedTeamPageProps> = ({
       </div>
 
       {/* Execution History Table */}
-      <div className="p-5 rounded-2xl bg-bayora-card border border-bayora-border space-y-4">
+      <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-card space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">ATTACK EXECUTION HISTORY</h3>
-          <span className="text-xs font-mono text-bayora-textMuted">{attacks.length} Executions</span>
+          <h3 className="text-sm font-bold text-slate-900 font-mono">ATTACK EXECUTION HISTORY</h3>
+          <span className="text-xs font-mono text-slate-500 font-semibold">{attacks.length} Executions</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead>
-              <tr className="border-b border-bayora-border text-slate-500 text-[11px]">
-                <th className="pb-3 font-medium">ATTACK ID</th>
-                <th className="pb-3 font-medium">CATEGORY</th>
-                <th className="pb-3 font-medium">SEVERITY</th>
-                <th className="pb-3 font-medium">RESULT CLASS</th>
-                <th className="pb-3 font-medium">LATENCY</th>
-                <th className="pb-3 font-medium">PAYLOAD HASH</th>
-                <th className="pb-3 font-medium text-right">CONFIDENTIAL PAYLOAD</th>
+              <tr className="border-b border-slate-200 text-slate-500 text-[11px]">
+                <th className="pb-3 font-semibold">ATTACK ID</th>
+                <th className="pb-3 font-semibold">CATEGORY</th>
+                <th className="pb-3 font-semibold">SEVERITY</th>
+                <th className="pb-3 font-semibold">RESULT CLASS</th>
+                <th className="pb-3 font-semibold">LATENCY</th>
+                <th className="pb-3 font-semibold">PAYLOAD HASH</th>
+                <th className="pb-3 font-semibold text-right">CONFIDENTIAL PAYLOAD</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-bayora-border/60">
-              {attacks.map((atk) => (
-                <tr key={atk.id} className="hover:bg-bayora-cardHover/40 transition-colors">
-                  <td className="py-3 text-white font-bold">{atk.id}</td>
-                  <td className="py-3 text-slate-300">{atk.category}</td>
-                  <td className="py-3">
-                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                      {atk.severity}
-                    </span>
-                  </td>
-                  <td className="py-3">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                      atk.result_class === 'BLOCKED'
-                        ? 'bg-emerald-500/15 text-emerald-400'
-                        : atk.result_class === 'VULNERABLE'
-                        ? 'bg-rose-500/15 text-rose-400'
-                        : 'bg-blue-500/15 text-blue-400'
-                    }`}>
-                      {atk.result_class}
-                    </span>
-                  </td>
-                  <td className="py-3 text-slate-400">{atk.latency_ms}ms</td>
-                  <td className="py-3 text-cyan-400">{atk.payload_hash.slice(0, 16)}...</td>
-                  <td className="py-3 text-right">
-                    <button
-                      onClick={() => setModalAttackId(atk.id)}
-                      className="px-2.5 py-1 rounded bg-bayora-bg hover:bg-bayora-cardHover border border-bayora-border text-[11px] text-amber-400 flex items-center gap-1 ml-auto"
-                    >
-                      <Eye className="w-3 h-3" />
-                      <span>REVEAL (RBAC)</span>
-                    </button>
+            <tbody className="divide-y divide-slate-100">
+              {attacks.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-6 text-center text-slate-400">
+                    No attacks executed yet in this evaluation session.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                attacks.map((atk) => (
+                  <tr key={atk.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 text-slate-900 font-bold">{atk.id}</td>
+                    <td className="py-3 text-slate-700">{atk.category}</td>
+                    <td className="py-3">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-red-50 text-red-700 border border-red-200 font-bold">
+                        {atk.severity}
+                      </span>
+                    </td>
+                    <td className="py-3">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        atk.result_class === 'BLOCKED'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                          : atk.result_class === 'VULNERABLE'
+                          ? 'bg-red-100 text-red-800 border border-red-200'
+                          : 'bg-blue-100 text-blue-800 border border-blue-200'
+                      }`}>
+                        {atk.result_class}
+                      </span>
+                    </td>
+                    <td className="py-3 text-slate-500">{atk.latency_ms}ms</td>
+                    <td className="py-3 text-blue-700 font-bold">{atk.payload_hash.slice(0, 16)}...</td>
+                    <td className="py-3 text-right">
+                      <button
+                        onClick={() => setModalAttackId(atk.id)}
+                        className="px-2.5 py-1 rounded bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[11px] text-amber-700 font-bold flex items-center gap-1 ml-auto cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>REVEAL (RBAC)</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

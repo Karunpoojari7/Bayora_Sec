@@ -47,71 +47,71 @@ export const PayloadModal: React.FC<PayloadModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-bayora-card border border-bayora-border w-full max-w-lg rounded-2xl p-6 relative shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-white border border-slate-200 w-full max-w-lg rounded-2xl p-6 relative shadow-elevated space-y-4">
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-bayora-border">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2">
-            <Lock className="w-5 h-5 text-amber-400" />
-            <h3 className="text-sm font-mono font-bold text-white uppercase">
+            <Lock className="w-5 h-5 text-amber-600" />
+            <h3 className="text-sm font-mono font-bold text-slate-900 uppercase">
               CONFIDENTIAL ATTACK PAYLOAD
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-bayora-textMuted hover:text-white hover:bg-bayora-bg"
+            className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Access Control Notice */}
-        <div className="p-3 rounded-lg bg-bayora-bg border border-bayora-border text-xs font-mono space-y-1">
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">REQUESTING ACTOR:</span>
-            <span className={`font-bold ${currentRole === 'RED_TEAM' || currentRole === 'ADMIN' ? 'text-emerald-400' : 'text-rose-400'}`}>
+            <span className="text-slate-500">REQUESTING ACTOR:</span>
+            <span className={`font-bold ${currentRole === 'RED_TEAM' || currentRole === 'ADMIN' ? 'text-emerald-700' : 'text-red-600'}`}>
               {currentRole}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-slate-400">REQUIRED CAPABILITY:</span>
-            <span className="text-amber-400">red:read_payload</span>
+            <span className="text-slate-500">REQUIRED CAPABILITY:</span>
+            <span className="text-amber-700 font-bold">red:read_payload</span>
           </div>
         </div>
 
         {/* Content Body */}
         {loading ? (
-          <div className="p-8 text-center text-xs font-mono text-bayora-textMuted">
+          <div className="p-8 text-center text-xs font-mono text-slate-500">
             Authenticating capability token...
           </div>
         ) : error ? (
-          <div className="p-4 rounded-xl bg-rose-950/30 border border-rose-500/40 text-xs font-mono text-rose-300 space-y-2">
-            <div className="flex items-center gap-2 font-bold text-rose-400">
-              <ShieldAlert className="w-4 h-4" />
+          <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-xs font-mono text-red-800 space-y-2">
+            <div className="flex items-center gap-2 font-bold text-red-700">
+              <ShieldAlert className="w-4 h-4 text-red-600" />
               <span>ZERO-TRUST POLICY VIOLATION</span>
             </div>
-            <p className="text-[11px] leading-relaxed">
+            <p className="text-[11px] leading-relaxed text-red-700">
               {error}
             </p>
-            <p className="text-[10px] text-rose-400/80 pt-1 border-t border-rose-500/20">
+            <p className="text-[10px] text-red-600 pt-1 border-t border-red-200">
               Blue Team and Viewer roles are strictly prohibited from viewing raw confidential Red Team payloads prior to authorized disclosure.
             </p>
           </div>
         ) : payload ? (
           <div className="space-y-3 font-mono text-xs">
             <div>
-              <span className="text-slate-500 text-[10px]">PAYLOAD ID:</span>
-              <div className="text-white font-bold">{payload.id}</div>
+              <span className="text-slate-500 text-[10px] font-semibold">PAYLOAD ID:</span>
+              <div className="text-slate-900 font-bold">{payload.id}</div>
             </div>
             <div>
-              <span className="text-slate-500 text-[10px]">RAW ADVERSARIAL PROMPT:</span>
-              <div className="mt-1 p-3 rounded-xl bg-bayora-bg border border-bayora-border text-slate-200 text-xs leading-relaxed whitespace-pre-wrap">
+              <span className="text-slate-500 text-[10px] font-semibold">RAW ADVERSARIAL PROMPT:</span>
+              <div className="mt-1 p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs leading-relaxed whitespace-pre-wrap font-mono">
                 {payload.prompt_text}
               </div>
             </div>
-            <div className="pt-2 flex items-center justify-between text-[10px] text-slate-400 border-t border-bayora-border">
-              <span>SHA-256:</span>
-              <span className="text-emerald-400 font-bold">{payload.payload_hash}</span>
+            <div className="pt-2 flex items-center justify-between text-[10px] text-slate-500 border-t border-slate-100">
+              <span>SHA-256 HASH:</span>
+              <span className="text-emerald-700 font-bold">{payload.payload_hash}</span>
             </div>
           </div>
         ) : null}
@@ -120,7 +120,7 @@ export const PayloadModal: React.FC<PayloadModalProps> = ({
         <div className="pt-2 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-bayora-bg hover:bg-bayora-cardHover border border-bayora-border text-xs font-mono text-white transition-all"
+            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-mono text-slate-800 font-semibold transition-all cursor-pointer"
           >
             CLOSE
           </button>

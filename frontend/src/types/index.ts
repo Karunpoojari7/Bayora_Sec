@@ -1,6 +1,20 @@
-export type Role = 'ADMIN' | 'RED_TEAM' | 'BLUE_TEAM' | 'VIEWER';
+export type Role = 'ADMIN' | 'RED_TEAM' | 'BLUE_TEAM' | 'MODEL_OPERATOR' | 'VIEWER';
 
 export type EvalStatus = 'DRAFT' | 'READY' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'QUARANTINED';
+
+export interface UserProfile {
+  user_id: string;
+  username: string;
+  email?: string;
+  role: Role;
+  capabilities: string[];
+}
+
+export interface AuthSession {
+  access_token: string;
+  refresh_token: string;
+  user: UserProfile;
+}
 
 export interface Evaluation {
   id: string;

@@ -13,7 +13,9 @@ export const PassportPage: React.FC<PassportPageProps> = ({ evaluationId }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadPassport();
+    if (evaluationId) {
+      loadPassport();
+    }
   }, [evaluationId]);
 
   const loadPassport = async () => {
@@ -40,8 +42,9 @@ export const PassportPage: React.FC<PassportPageProps> = ({ evaluationId }) => {
 
   if (!passport) {
     return (
-      <div className="p-8 text-center text-xs font-mono text-bayora-textMuted">
-        Generating verifiable Test Integrity Passport...
+      <div className="p-12 text-center text-xs font-mono text-slate-500 bg-white rounded-2xl border border-slate-200 shadow-subtle">
+        <Award className="w-8 h-8 text-blue-600 mx-auto mb-2 animate-bounce" />
+        <div>Generating verifiable Test Integrity Passport...</div>
       </div>
     );
   }

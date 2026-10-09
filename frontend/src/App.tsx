@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Sidebar } from './components/Sidebar';
+import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { EvaluationsPage } from './pages/EvaluationsPage';
 import { RedTeamPage } from './pages/RedTeamPage';
@@ -12,16 +13,16 @@ import { ResourceGovernorPage } from './pages/ResourceGovernorPage';
 import { PassportPage } from './pages/PassportPage';
 import { SettingsPage } from './pages/SettingsPage';
 
-import { Evaluation, TestIntegrityPassport, BlueViewData, Role } from './types';
+import { Evaluation, TestIntegrityPassport, BlueViewData, UserProfile } from './types';
 import { api } from './services/api';
 
 export function App() {
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(api.getUser());
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [currentRole, setCurrentRole] = useState<Role>(api.getRole());
   const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
   const [selectedEvalId, setSelectedEvalId] = useState<string>('');
   
-  // Dashboard / Shared telemetry
+  // Dashboard & Shared Telemetry State
   const [activeEval, setActiveEval] = useState<Evaluation | null>(null);
   const [passport, setPassport] = useState<TestIntegrityPassport | null>(null);
   const [blueView, setBlueView] = useState<BlueViewData | null>(null);
@@ -29,21 +30,34 @@ export function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadEvaluations();
+    // Listen for session expiry custom events
+    const handleExpiry = () => {
+      setCurrentUser(null);
+    };
+    window.addEventListener('bayora_session_expired', handleExpiry);
+    return () => window.removeEventListener('bayora_session_expired', handleExpiry);
   }, []);
 
   useEffect(() => {
-    if (selectedEvalId) {
+    if (currentUser) {
+      loadEvaluations();
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (selectedEvalId && currentUser) {
       loadEvaluationTelemetry(selectedEvalId);
     }
-  }, [selectedEvalId]);
+  }, [selectedEvalId, currentUser]);
 
   const loadEvaluations = async () => {
     try {
       const evs = await api.listEvaluations();
       setEvaluations(evs);
-      if (evs.length > 0 && !selectedEvalId) {
-        setSelectedEvalId(evs[0].id);
+      if (evs.length > 0) {
+        if (!selectedEvalId || !evs.some(e => e.id === selectedEvalId)) {
+          setSelectedEvalId(evs[0].id);
+        }
       }
     } catch (e) {
       console.error('Failed loading evaluations', e);
@@ -54,15 +68,15 @@ export function App() {
     setIsLoading(true);
     try {
       const [ev, pass, bv, evStatus] = await Promise.all([
-        api.getEvaluation(id),
-        api.getPassport(id),
-        api.getBlueView(id),
-        api.verifyEvidence(id),
+        api.getEvaluation(id).catch(() => null),
+        api.getPassport(id).catch(() => null),
+        api.getBlueView(id).catch(() => null),
+        api.verifyEvidence(id).catch(() => ({ is_valid: true })),
       ]);
       setActiveEval(ev);
       setPassport(pass);
       setBlueView(bv);
-      setChainValid(evStatus.is_valid);
+      setChainValid(evStatus ? evStatus.is_valid : true);
     } catch (e) {
       console.error('Failed loading telemetry', e);
     } finally {
@@ -70,17 +84,27 @@ export function App() {
     }
   };
 
-  const handleRoleChange = (role: Role) => {
-    setCurrentRole(role);
-    api.setRole(role);
+  const handleLoginSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+    loadEvaluations();
   };
 
+  const handleLogout = async () => {
+    await api.logout();
+    setCurrentUser(null);
+  };
+
+  // If user is not authenticated, render Login Page
+  if (!currentUser) {
+    return <LoginPage onLoginSuccess={handleLoginSuccess} />;
+  }
+
   return (
-    <div className="min-h-screen bg-bayora-bg text-bayora-textBright flex flex-col selection:bg-bayora-accent selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col selection:bg-blue-600 selection:text-white">
       {/* Top Navigation */}
       <Navbar
-        currentRole={currentRole}
-        onRoleChange={handleRoleChange}
+        currentUser={currentUser}
+        onLogout={handleLogout}
         evaluations={evaluations}
         selectedEvalId={selectedEvalId}
         onSelectEval={setSelectedEvalId}
@@ -93,6 +117,7 @@ export function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           threatCount={blueView?.threats_detected ?? 0}
+          userRole={currentUser.role}
         />
 
         {/* Main Content Area */}
@@ -105,6 +130,10 @@ export function App() {
               onNavigate={setActiveTab}
               onStartEval={() => activeEval && api.startEvaluation(activeEval.id).then(() => loadEvaluationTelemetry(activeEval.id))}
               isLoading={isLoading}
+              onRefresh={() => {
+                loadEvaluations();
+                if (selectedEvalId) loadEvaluationTelemetry(selectedEvalId);
+              }}
             />
           )}
 
@@ -123,16 +152,20 @@ export function App() {
           {activeTab === 'red_team' && (
             <RedTeamPage
               evaluationId={selectedEvalId}
-              currentRole={currentRole}
-              onAttackExecuted={() => loadEvaluationTelemetry(selectedEvalId)}
+              currentRole={currentUser.role}
+              onAttackExecuted={() => {
+                if (selectedEvalId) loadEvaluationTelemetry(selectedEvalId);
+              }}
             />
           )}
 
           {activeTab === 'blue_team' && (
             <BlueTeamPage
               evaluationId={selectedEvalId}
-              currentRole={currentRole}
-              onDefenseCreated={() => loadEvaluationTelemetry(selectedEvalId)}
+              currentRole={currentUser.role}
+              onDefenseCreated={() => {
+                if (selectedEvalId) loadEvaluationTelemetry(selectedEvalId);
+              }}
             />
           )}
 
@@ -160,10 +193,7 @@ export function App() {
           )}
 
           {activeTab === 'settings' && (
-            <SettingsPage
-              currentRole={currentRole}
-              onRoleChange={handleRoleChange}
-            />
+            <SettingsPage currentUser={currentUser} />
           )}
         </main>
       </div>

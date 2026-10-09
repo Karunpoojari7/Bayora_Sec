@@ -4,24 +4,26 @@
 
 @layer base {
   body {
-    @apply bg-bayora-bg text-bayora-textBright font-sans antialiased;
+    @apply bg-bayora-bg text-bayora-textPrimary font-sans antialiased;
+    background-color: #F8FAFC;
+    color: #0F172A;
   }
 }
 
-/* Custom scrollbar for dark security dashboard */
+/* Custom scrollbar for clean enterprise dashboard */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080C14;
+  background: #F1F5F9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
+  background: #CBD5E1;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #94A3B8;
 }
 
 @keyframes fadeIn {

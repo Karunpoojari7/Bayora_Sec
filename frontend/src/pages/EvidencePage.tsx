@@ -18,7 +18,9 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadData();
+    if (evaluationId) {
+      loadData();
+    }
   }, [evaluationId]);
 
   const loadData = async () => {
@@ -67,12 +69,12 @@ export const EvidencePage: React.FC<EvidencePageProps> = ({
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold font-mono text-white">IMMUTABLE EVIDENCE CENTER</h2>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/40 font-bold">
+          <h2 className="text-xl font-bold font-mono text-slate-900">IMMUTABLE EVIDENCE CENTER</h2>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200 font-bold">
             SHA-256 HASH CHAIN
           </span>
         </div>
-        <p className="text-xs text-bayora-textMuted mt-0.5">
+        <p className="text-xs text-slate-500 mt-0.5">
           Tamper-evident event provenance. Every attack, defense, and test check is chained to the preceding cryptographic block.
         </p>
       </div>

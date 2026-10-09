@@ -2,33 +2,58 @@ import {
   Evaluation, Attack, AttackPayload, AttackLibraryItem,
   Defense, SecurityFinding, BlueViewData, EvidenceEvent,
   EvidenceVerification, ContaminationCheck, ResourceFairness,
-  TestIntegrityPassport, Role
+  TestIntegrityPassport, Role, UserProfile
 } from '../types';
 
 const API_BASE = '/api/v1';
 
 class ApiClient {
-  private currentRole: Role = 'ADMIN';
-  private authToken: string = '';
+  private accessToken: string = '';
+  private refreshTokenVal: string = '';
+  private userProfile: UserProfile | null = null;
 
-  setRole(role: Role) {
-    this.currentRole = role;
-    localStorage.setItem('bayora_role', role);
+  constructor() {
+    this.accessToken = localStorage.getItem('bayora_access_token') || '';
+    this.refreshTokenVal = localStorage.getItem('bayora_refresh_token') || '';
+    const storedUser = localStorage.getItem('bayora_user_profile');
+    if (storedUser) {
+      try {
+        this.userProfile = JSON.parse(storedUser);
+      } catch (e) {
+        this.userProfile = null;
+      }
+    }
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.accessToken && !!this.userProfile;
+  }
+
+  getUser(): UserProfile | null {
+    return this.userProfile;
   }
 
   getRole(): Role {
-    const saved = localStorage.getItem('bayora_role') as Role;
-    if (saved) this.currentRole = saved;
-    return this.currentRole;
+    return this.userProfile?.role || 'VIEWER';
   }
 
-  setToken(token: string) {
-    this.authToken = token;
-    localStorage.setItem('bayora_token', token);
+  setSession(accessToken: string, refreshToken: string, user: UserProfile) {
+    this.accessToken = accessToken;
+    this.refreshTokenVal = refreshToken;
+    this.userProfile = user;
+    localStorage.setItem('bayora_access_token', accessToken);
+    localStorage.setItem('bayora_refresh_token', refreshToken);
+    localStorage.setItem('bayora_user_profile', JSON.stringify(user));
   }
 
-  getToken(): string {
-    return this.authToken || localStorage.getItem('bayora_token') || '';
+  clearSession() {
+    this.accessToken = '';
+    this.refreshTokenVal = '';
+    this.userProfile = null;
+    localStorage.removeItem('bayora_access_token');
+    localStorage.removeItem('bayora_refresh_token');
+    localStorage.removeItem('bayora_user_profile');
+    localStorage.removeItem('bayora_role');
   }
 
   private getHeaders(): HeadersInit {
@@ -36,19 +61,8 @@ class ApiClient {
       'Content-Type': 'application/json',
     };
 
-    const token = this.getToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    // Role-based capability token for sandbox simulation
-    const role = this.getRole();
-    if (role === 'RED_TEAM') {
-      headers['X-Bayora-Capability'] = 'red-demo-token';
-    } else if (role === 'BLUE_TEAM') {
-      headers['X-Bayora-Capability'] = 'blue-demo-token';
-    } else if (role === 'ADMIN') {
-      headers['X-Bayora-Capability'] = 'admin-demo-token';
+    if (this.accessToken) {
+      headers['Authorization'] = `Bearer ${this.accessToken}`;
     }
 
     return headers;
@@ -56,13 +70,34 @@ class ApiClient {
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
-    const response = await fetch(url, {
+    
+    let response = await fetch(url, {
       ...options,
       headers: {
         ...this.getHeaders(),
         ...(options.headers || {}),
       },
     });
+
+    // Handle 401: attempt refresh token if available
+    if (response.status === 401 && this.refreshTokenVal && !endpoint.includes('/auth/')) {
+      try {
+        const refreshed = await this.refreshToken();
+        if (refreshed) {
+          // Retry original request with new access token
+          response = await fetch(url, {
+            ...options,
+            headers: {
+              ...this.getHeaders(),
+              ...(options.headers || {}),
+            },
+          });
+        }
+      } catch (err) {
+        this.clearSession();
+        window.dispatchEvent(new CustomEvent('bayora_session_expired'));
+      }
+    }
 
     if (!response.ok) {
       let errorDetail = `HTTP ${response.status}: ${response.statusText}`;
@@ -80,18 +115,82 @@ class ApiClient {
     return response.json();
   }
 
-  // Auth
-  async login(username: string, password: string) {
-    const res = await this.request<{ access_token: string; role: Role }>('/auth/login', {
+  // --- Auth Endpoints ---
+  async login(username: string, password: string): Promise<UserProfile> {
+    const res = await this.request<{
+      access_token: string;
+      refresh_token: string;
+      role: Role;
+      user_id: string;
+      username: string;
+      capabilities: string[];
+    }>('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
     });
-    this.setToken(res.access_token);
-    this.setRole(res.role);
+
+    const userProfile: UserProfile = {
+      user_id: res.user_id,
+      username: res.username,
+      role: res.role,
+      capabilities: res.capabilities || []
+    };
+
+    this.setSession(res.access_token, res.refresh_token, userProfile);
+    return userProfile;
+  }
+
+  async refreshToken(): Promise<boolean> {
+    if (!this.refreshTokenVal) return false;
+    try {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: this.refreshTokenVal }),
+      });
+      if (!res.ok) {
+        this.clearSession();
+        return false;
+      }
+      const data = await res.json();
+      this.accessToken = data.access_token;
+      this.refreshTokenVal = data.refresh_token;
+      localStorage.setItem('bayora_access_token', data.access_token);
+      localStorage.setItem('bayora_refresh_token', data.refresh_token);
+      return true;
+    } catch (e) {
+      this.clearSession();
+      return false;
+    }
+  }
+
+  async logout(): Promise<void> {
+    try {
+      if (this.refreshTokenVal) {
+        await fetch(`${API_BASE}/auth/logout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh_token: this.refreshTokenVal }),
+        });
+      }
+    } catch (e) {
+      // Ignore network errors during logout
+    } finally {
+      this.clearSession();
+    }
+  }
+
+  async getMe(): Promise<UserProfile> {
+    const res = await this.request<UserProfile>('/auth/me');
+    if (this.userProfile) {
+      this.userProfile.capabilities = res.capabilities;
+      this.userProfile.role = res.role;
+      localStorage.setItem('bayora_user_profile', JSON.stringify(this.userProfile));
+    }
     return res;
   }
 
-  // Evaluations
+  // --- Evaluations ---
   async listEvaluations(): Promise<Evaluation[]> {
     return this.request<Evaluation[]>('/evaluations');
   }
@@ -129,7 +228,7 @@ class ApiClient {
     );
   }
 
-  // Red Team
+  // --- Red Team ---
   async getAttackLibrary(id: string): Promise<AttackLibraryItem[]> {
     return this.request<AttackLibraryItem[]>(`/evaluations/${id}/attacks/library`);
   }
@@ -158,7 +257,7 @@ class ApiClient {
     return this.request<AttackPayload>(`/evaluations/${id}/attacks/${attackId}/payload`);
   }
 
-  // Blue Team
+  // --- Blue Team ---
   async getBlueView(id: string): Promise<BlueViewData> {
     return this.request<BlueViewData>(`/evaluations/${id}/blue-view`);
   }
@@ -188,7 +287,7 @@ class ApiClient {
     return this.request<SecurityFinding[]>(`/evaluations/${id}/findings`);
   }
 
-  // Target LLM
+  // --- Target LLM ---
   async infer(id: string, prompt: string, applyDefenses = true) {
     return this.request<{ response: string; result_class: string; blocked_by?: string; latency_ms: number; provider_name: string }>(
       `/evaluations/${id}/inference`,
@@ -207,7 +306,7 @@ class ApiClient {
     return this.request<{ service: string; status: string; provider: string }>(`/evaluations/BAY-2026-00001/llm-health`);
   }
 
-  // Evidence
+  // --- Evidence ---
   async getEvidenceChain(id: string): Promise<EvidenceEvent[]> {
     return this.request<EvidenceEvent[]>(`/evaluations/${id}/evidence`);
   }
@@ -223,7 +322,7 @@ class ApiClient {
     );
   }
 
-  // Contamination
+  // --- Contamination ---
   async runContaminationCheck(id: string, customProbe?: string): Promise<ContaminationCheck> {
     return this.request<ContaminationCheck>(`/evaluations/${id}/contamination/check`, {
       method: 'POST',
@@ -235,7 +334,7 @@ class ApiClient {
     return this.request<ContaminationCheck[]>(`/evaluations/${id}/contamination/checks`);
   }
 
-  // Trust & Passport
+  // --- Trust & Passport ---
   async getPassport(id: string): Promise<TestIntegrityPassport> {
     return this.request<TestIntegrityPassport>(`/evaluations/${id}/passport`);
   }
