@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-bayora-bg text-bayora-textPrimary font-sans antialiased;
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
     background-color: #F8FAFC;
     color: #0F172A;
   }
