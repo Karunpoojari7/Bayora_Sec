@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, Shield, CheckCircle2, XCircle, RefreshCw, Key, Mail } from 'lucide-react';
+import { Users, UserPlus, Shield, CheckCircle2, XCircle, RefreshCw, Key, Mail, Search, Lock, X } from 'lucide-react';
 import { api } from '../../services/api';
 
 export const UsersPage: React.FC = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newUser, setNewUser] = useState({
     username: '',
@@ -34,7 +35,7 @@ export const UsersPage: React.FC = () => {
     e.preventDefault();
     try {
       await api.createUser(newUser);
-      setStatusMsg(`User '${newUser.username}' created successfully.`);
+      setStatusMsg(`User '${newUser.username}' provisioned with cryptographic credentials.`);
       setShowCreateModal(false);
       setNewUser({ username: '', email: '', password: '', role: 'RED_TEAM' });
       await loadUsers();
@@ -44,18 +45,26 @@ export const UsersPage: React.FC = () => {
     }
   };
 
+  const filteredUsers = users.filter(u =>
+    searchQuery === '' ||
+    u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    u.role.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Users & Access Management</h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-black text-[#F4F8FF] tracking-tight">Users & Teams Governance</h1>
+          <p className="text-[#718BA6] text-xs mt-1">
             Provision user accounts, assign cryptographic RBAC roles, and manage active session authorizations.
           </p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#087BFF] hover:bg-[#2395FF] text-white text-xs font-mono font-bold rounded-lg transition-all shadow-[0_0_12px_rgba(8,123,255,0.35)] cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           Provision New User
@@ -63,73 +72,91 @@ export const UsersPage: React.FC = () => {
       </div>
 
       {statusMsg && (
-        <div className="p-3 bg-blue-50 text-blue-900 text-xs rounded-xl border border-blue-200 font-semibold flex items-center justify-between">
+        <div className="p-3 bg-[#071729] border border-[#00D6B5] text-[#00D6B5] text-xs rounded-xl font-mono font-semibold flex items-center justify-between shadow-[0_0_10px_rgba(0,214,181,0.2)]">
           <span>{statusMsg}</span>
-          <button onClick={() => setStatusMsg(null)} className="text-blue-700 hover:text-blue-900">✕</button>
+          <button onClick={() => setStatusMsg(null)} className="text-[#718BA6] hover:text-white">✕</button>
         </div>
       )}
 
+      {/* Filter Toolbar */}
+      <div className="bg-[#071729] p-4 rounded-xl border border-[#12324F] shadow-card flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="flex items-center gap-2 w-full md:w-80">
+          <Search className="w-4 h-4 text-[#718BA6]" />
+          <input
+            type="text"
+            placeholder="Search users by username, email, or role..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full text-xs bg-[#061321] border border-[#12324F] rounded-lg px-3 py-2 text-[#EAF4FF] placeholder-[#718BA6] focus:outline-none focus:border-[#087BDA]"
+          />
+        </div>
+
+        <button
+          onClick={loadUsers}
+          disabled={loading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono text-[#7FB6E8] hover:text-[#EAF4FF] bg-[#061321] border border-[#12324F] rounded-lg transition-colors cursor-pointer"
+        >
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh Roster
+        </button>
+      </div>
+
       {/* Users Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 font-semibold text-slate-900 text-sm flex items-center justify-between">
+      <div className="bg-[#071729] rounded-xl border border-[#12324F] shadow-card overflow-hidden">
+        <div className="p-4 border-b border-[#10283E] font-semibold text-[#F4F8FF] text-sm flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-blue-600" />
-            Provisioned Accounts ({users.length})
+            <Users className="w-4 h-4 text-[#00A3FF]" />
+            Provisioned Accounts ({filteredUsers.length})
           </span>
-          <button
-            onClick={loadUsers}
-            disabled={loading}
-            className="text-slate-400 hover:text-slate-600 text-xs flex items-center gap-1"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
-          </button>
+          <span className="text-xs text-[#718BA6] font-mono">Server-Enforced RBAC</span>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-slate-400 text-sm">Loading user roster...</div>
-        ) : users.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm">No users found.</div>
+          <div className="p-12 text-center text-[#718BA6] text-xs font-mono">Loading user roster...</div>
+        ) : filteredUsers.length === 0 ? (
+          <div className="p-12 text-center text-[#718BA6] text-xs font-mono">No matching users found.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold">
-                <tr>
-                  <th className="px-4 py-3">User</th>
-                  <th className="px-4 py-3">Assigned Role</th>
-                  <th className="px-4 py-3">Status</th>
-                  <th className="px-4 py-3">User ID</th>
-                  <th className="px-4 py-3 text-right">Created</th>
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-[#0C2137] text-[#718BA6] font-mono font-bold text-[10px] uppercase border-b border-[#12324F]">
+                  <th className="py-3 px-4">Operator Account</th>
+                  <th className="py-3 px-4">Role Assignment</th>
+                  <th className="py-3 px-4">Account Status</th>
+                  <th className="py-3 px-4">Subject Identifier</th>
+                  <th className="py-3 px-4 text-right">Provisioned At</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {users.map(u => (
-                  <tr key={u.id} className="hover:bg-slate-50/60">
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-900">{u.username}</div>
-                      <div className="text-xs text-slate-400 flex items-center gap-1">
-                        <Mail className="w-3 h-3" /> {u.email || `${u.username}@bayora.internal`}
+              <tbody className="divide-y divide-[#10283E] font-mono">
+                {filteredUsers.map(u => (
+                  <tr key={u.id} className="hover:bg-[#0B2C4C]/40 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="font-bold text-[#F4F8FF]">{u.username}</div>
+                      <div className="text-[11px] text-[#718BA6] flex items-center gap-1 mt-0.5">
+                        <Mail className="w-3 h-3 text-[#7FB6E8]" /> {u.email || `${u.username}@bayora.internal`}
                       </div>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className={`px-2.5 py-1 text-xs font-bold rounded uppercase ${
-                        u.role === 'ADMIN' ? 'bg-blue-100 text-blue-800' :
-                        u.role === 'RED_TEAM' ? 'bg-rose-100 text-rose-800' :
-                        u.role === 'BLUE_TEAM' ? 'bg-emerald-100 text-emerald-800' :
-                        u.role === 'MODEL_OPERATOR' ? 'bg-purple-100 text-purple-800' :
-                        'bg-slate-100 text-slate-800'
+                    <td className="py-3 px-4">
+                      <span className={`px-2.5 py-1 text-[11px] font-bold rounded uppercase ${
+                        u.role === 'ADMIN' ? 'bg-[#0A1D31] text-[#7FB6E8] border border-[#075AA0]' :
+                        u.role === 'RED_TEAM' ? 'bg-[#1F0A10] text-[#FF3D59] border border-[#FF3D59]/40' :
+                        u.role === 'BLUE_TEAM' ? 'bg-[#0A2926] text-[#00D6B5] border border-[#00D6B5]/40' :
+                        u.role === 'MODEL_OPERATOR' ? 'bg-[#140A24] text-[#A56BFF] border border-[#A56BFF]/40' :
+                        'bg-[#061321] text-[#A9C2DA] border border-[#12324F]'
                       }`}>
                         {u.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5">
-                      <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Active
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center gap-1.5 text-[#19CDA5] font-semibold text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#19CDA5]"></span>
+                        Active
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 font-mono text-xs text-slate-500">
+                    <td className="py-3 px-4 text-[#7FB6E8] text-[11px]">
                       {u.id}
                     </td>
-                    <td className="px-4 py-3.5 text-right text-xs text-slate-400">
+                    <td className="py-3 px-4 text-right text-[#718BA6] text-[11px]">
                       {u.created_at ? new Date(u.created_at).toLocaleDateString() : 'System Boot'}
                     </td>
                   </tr>
@@ -142,24 +169,24 @@ export const UsersPage: React.FC = () => {
 
       {/* Provision User Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-blue-600" />
+        <div className="fixed inset-0 bg-[#030914]/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#071729] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[#087BDA] space-y-4 animate-fade-in">
+            <div className="flex items-center justify-between pb-3 border-b border-[#12324F]">
+              <h3 className="text-base font-bold text-[#F4F8FF] flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-[#00A3FF]" />
                 Provision User Account
               </h3>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="text-[#718BA6] hover:text-white cursor-pointer"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateUser} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                <label className="text-xs font-bold text-[#A9C2DA] uppercase tracking-wider block mb-1 font-mono">
                   Username *
                 </label>
                 <input
@@ -168,12 +195,12 @@ export const UsersPage: React.FC = () => {
                   placeholder="e.g. sec_tester_01"
                   value={newUser.username}
                   onChange={e => setNewUser({ ...newUser, username: e.target.value })}
-                  className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-xs font-mono bg-[#061321] border border-[#12324F] rounded-lg p-2.5 text-[#EAF4FF] placeholder-[#718BA6] focus:border-[#087BDA]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                <label className="text-xs font-bold text-[#A9C2DA] uppercase tracking-wider block mb-1 font-mono">
                   Email Address
                 </label>
                 <input
@@ -181,12 +208,12 @@ export const UsersPage: React.FC = () => {
                   placeholder="user@organization.com"
                   value={newUser.email}
                   onChange={e => setNewUser({ ...newUser, email: e.target.value })}
-                  className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-xs font-mono bg-[#061321] border border-[#12324F] rounded-lg p-2.5 text-[#EAF4FF] placeholder-[#718BA6] focus:border-[#087BDA]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                <label className="text-xs font-bold text-[#A9C2DA] uppercase tracking-wider block mb-1 font-mono">
                   Initial Password *
                 </label>
                 <input
@@ -195,18 +222,18 @@ export const UsersPage: React.FC = () => {
                   placeholder="Minimum 8 characters"
                   value={newUser.password}
                   onChange={e => setNewUser({ ...newUser, password: e.target.value })}
-                  className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-xs font-mono bg-[#061321] border border-[#12324F] rounded-lg p-2.5 text-[#EAF4FF] placeholder-[#718BA6] focus:border-[#087BDA]"
                 />
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                <label className="text-xs font-bold text-[#A9C2DA] uppercase tracking-wider block mb-1 font-mono">
                   Platform Role *
                 </label>
                 <select
                   value={newUser.role}
                   onChange={e => setNewUser({ ...newUser, role: e.target.value })}
-                  className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 font-semibold"
+                  className="w-full text-xs font-mono bg-[#061321] border border-[#12324F] rounded-lg p-2.5 text-[#EAF4FF] font-semibold focus:border-[#087BDA]"
                 >
                   <option value="RED_TEAM">RED_TEAM (Offensive Testing Operator)</option>
                   <option value="BLUE_TEAM">BLUE_TEAM (Defensive Guardrail Operator)</option>
@@ -220,13 +247,13 @@ export const UsersPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200"
+                  className="px-4 py-2 text-xs font-semibold text-[#A9C2DA] bg-[#061321] border border-[#12324F] rounded-lg hover:bg-[#0B2C4C] cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm"
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#087BFF] hover:bg-[#2395FF] rounded-lg shadow-sm cursor-pointer"
                 >
                   Create & Authorize
                 </button>

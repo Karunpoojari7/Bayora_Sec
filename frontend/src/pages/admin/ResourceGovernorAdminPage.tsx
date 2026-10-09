@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gauge, Cpu, BarChart3, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw } from 'lucide-react';
+import { Gauge, Cpu, BarChart3, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw, Radio, HardDrive, Zap } from 'lucide-react';
 import { ResourceFairness } from '../../types';
 import { api } from '../../services/api';
 
@@ -30,57 +30,63 @@ export const ResourceGovernorAdminPage: React.FC<ResourceGovernorAdminPageProps>
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Resource Governor & Fair Queuing</h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-black text-[#F4F8FF] tracking-tight">Resource Governor & Fair Queuing</h1>
+          <p className="text-[#718BA6] text-xs mt-1">
             Token quotas, fair-share scheduling, denial-of-service throttling, and rate limit enforcement.
           </p>
         </div>
         <button
           onClick={loadFairness}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm transition-colors"
+          className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-[#EAF4FF] bg-[#071729] hover:bg-[#0A1D31] border border-[#12324F] hover:border-[#087BDA] rounded-lg shadow-subtle transition-all cursor-pointer"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 text-[#00A3FF] ${loading ? 'animate-spin' : ''}`} />
           Refresh Governor State
         </button>
       </div>
 
-      {/* Fairness Hero */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+      {/* Fairness Hero Card */}
+      <div className="bg-[#071729] p-6 rounded-xl border border-[#12324F] shadow-card grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
         <div className="space-y-1">
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+          <span className="text-xs font-bold text-[#718BA6] uppercase tracking-wider font-mono">
             Fairness Allocation Index
           </span>
-          <div className="text-4xl font-black text-slate-900">
+          <div className="text-4xl font-black text-[#F4F8FF] font-mono">
             {fairness?.fairness_score ?? 98.0}
-            <span className="text-sm font-normal text-slate-500"> / 100</span>
+            <span className="text-sm font-normal text-[#718BA6]"> / 100</span>
           </div>
-          <div className="text-xs font-semibold text-emerald-700">
+          <div className="text-xs font-semibold text-[#00D6B5] flex items-center gap-1.5 font-mono pt-1">
+            <span className="w-2 h-2 rounded-full bg-[#00D6B5]"></span>
             Fair-share status: {fairness?.status ?? 'BALANCED'}
           </div>
         </div>
 
-        {/* Shares */}
+        {/* Quota Shares */}
         <div className="md:col-span-2 space-y-3">
-          <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">Quota Allocation Shares</span>
-          <div className="space-y-2 text-xs font-mono">
-            <div className="flex items-center justify-between">
-              <span className="text-rose-600 font-bold">Red Team Offensive Probes</span>
-              <span>{fairness?.red_resource_share_pct ?? 42}% (Max: 50%)</span>
-            </div>
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-              <div className="bg-rose-500 h-full rounded-full" style={{ width: `${fairness?.red_resource_share_pct ?? 42}%` }}></div>
+          <span className="text-xs font-bold text-[#A9C2DA] uppercase tracking-wider font-mono">Quota Allocation Shares</span>
+          <div className="space-y-2.5 text-xs font-mono">
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[#FF3D59] font-bold">Red Team Offensive Probes</span>
+                <span className="text-[#EAF4FF]">{fairness?.red_resource_share_pct ?? 42}% (Max: 50%)</span>
+              </div>
+              <div className="w-full bg-[#061321] h-2 rounded-full overflow-hidden border border-[#12324F]">
+                <div className="bg-[#FF3D59] h-full rounded-full shadow-[0_0_8px_rgba(255,61,89,0.5)]" style={{ width: `${fairness?.red_resource_share_pct ?? 42}%` }}></div>
+              </div>
             </div>
 
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-emerald-600 font-bold">Blue Team Policy Verifications</span>
-              <span>{fairness?.blue_resource_share_pct ?? 38}% (Max: 50%)</span>
-            </div>
-            <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-              <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${fairness?.blue_resource_share_pct ?? 38}%` }}></div>
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[#00D6B5] font-bold">Blue Team Policy Verifications</span>
+                <span className="text-[#EAF4FF]">{fairness?.blue_resource_share_pct ?? 38}% (Max: 50%)</span>
+              </div>
+              <div className="w-full bg-[#061321] h-2 rounded-full overflow-hidden border border-[#12324F]">
+                <div className="bg-[#00D6B5] h-full rounded-full shadow-[0_0_8px_rgba(0,214,181,0.5)]" style={{ width: `${fairness?.blue_resource_share_pct ?? 38}%` }}></div>
+              </div>
             </div>
           </div>
         </div>
@@ -88,22 +94,22 @@ export const ResourceGovernorAdminPage: React.FC<ResourceGovernorAdminPageProps>
 
       {/* Governance Settings Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-2">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Global Rate Limit</div>
-          <div className="text-xl font-bold text-slate-900 font-mono">60 req / min</div>
-          <p className="text-xs text-slate-500">Sliding window bucket enforcement per actor identity.</p>
+        <div className="bg-[#071729] p-6 rounded-xl border border-[#12324F] shadow-card space-y-2">
+          <div className="text-xs font-bold text-[#718BA6] uppercase tracking-wider font-mono">Global Rate Limit</div>
+          <div className="text-xl font-bold text-[#F4F8FF] font-mono">60 req / min</div>
+          <p className="text-xs text-[#A9C2DA]">Sliding window bucket enforcement per actor identity.</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-2">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Concurrent Queue Depth</div>
-          <div className="text-xl font-bold text-slate-900 font-mono">16 Max Concurrent</div>
-          <p className="text-xs text-slate-500">Protects target LLM inference worker from memory exhaustion.</p>
+        <div className="bg-[#071729] p-6 rounded-xl border border-[#12324F] shadow-card space-y-2">
+          <div className="text-xs font-bold text-[#718BA6] uppercase tracking-wider font-mono">Concurrent Queue Depth</div>
+          <div className="text-xl font-bold text-[#F4F8FF] font-mono">16 Max Concurrent</div>
+          <p className="text-xs text-[#A9C2DA]">Protects target LLM inference worker from memory exhaustion.</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-2">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Hard Quota Threshold</div>
-          <div className="text-xl font-bold text-slate-900 font-mono">500 Probes / Eval</div>
-          <p className="text-xs text-slate-500">Evaluation automatically suspends upon hitting probe ceiling.</p>
+        <div className="bg-[#071729] p-6 rounded-xl border border-[#12324F] shadow-card space-y-2">
+          <div className="text-xs font-bold text-[#718BA6] uppercase tracking-wider font-mono">Hard Quota Threshold</div>
+          <div className="text-xl font-bold text-[#F4F8FF] font-mono">500 Probes / Eval</div>
+          <p className="text-xs text-[#A9C2DA]">Evaluation automatically suspends upon hitting probe ceiling.</p>
         </div>
       </div>
     </div>

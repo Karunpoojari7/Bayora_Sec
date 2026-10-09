@@ -22,90 +22,95 @@ export const RbacPage: React.FC = () => {
     {
       role: 'ADMIN',
       label: 'Administrator',
+      color: '#00A3FF',
       caps: ['red:execute', 'red:read_library', 'red:read_confidential_payload', 'blue:read_sanitized_results', 'blue:write_defense', 'blue:test_defense', 'blue:request_disclosure', 'model:operate', 'model:check_contamination', 'eval:create', 'eval:control', 'evidence:verify', 'admin:manage_users']
     },
     {
       role: 'RED_TEAM',
       label: 'Red Team',
+      color: '#FF3D59',
       caps: ['red:execute', 'red:read_library', 'red:read_confidential_payload', 'model:operate', 'evidence:verify']
     },
     {
       role: 'BLUE_TEAM',
       label: 'Blue Team',
+      color: '#00D6B5',
       caps: ['blue:read_sanitized_results', 'blue:write_defense', 'blue:test_defense', 'blue:request_disclosure', 'evidence:verify']
     },
     {
       role: 'MODEL_OPERATOR',
       label: 'Model Operator',
+      color: '#A56BFF',
       caps: ['model:operate', 'model:check_contamination', 'evidence:verify']
     },
     {
       role: 'AUDITOR',
       label: 'Auditor',
+      color: '#7FB6E8',
       caps: ['blue:read_sanitized_results', 'evidence:verify']
     }
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Roles & Capability Matrix</h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-black text-[#F4F8FF] tracking-tight">Roles & Capability Matrix</h1>
+          <p className="text-[#718BA6] text-xs mt-1">
             Server-enforced cryptographic authorization matrix. Every API endpoint enforces mandatory capability verification.
           </p>
         </div>
       </div>
 
       {/* Security Architecture Guarantee */}
-      <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-start gap-3">
-        <Lock className="w-5 h-5 text-blue-700 shrink-0 mt-0.5" />
-        <div className="text-xs text-blue-900 leading-relaxed">
-          <span className="font-bold">Cryptographic Server Enforcement:</span> Client-side role variables cannot elevate privileges. The FastAPI gateway cryptographically parses the JWT signature and enforces explicit capability checks on every single HTTP and WebSocket route.
+      <div className="bg-[#071729] border border-[#087BDA] p-4 rounded-xl flex items-start gap-3 shadow-[0_0_12px_rgba(8,123,218,0.2)]">
+        <Lock className="w-5 h-5 text-[#00A3FF] shrink-0 mt-0.5" />
+        <div className="text-xs text-[#A9C2DA] leading-relaxed">
+          <span className="font-bold text-[#EAF4FF]">Cryptographic Server Enforcement:</span> Client-side role variables cannot elevate privileges. The FastAPI gateway cryptographically parses the JWT signature and enforces explicit capability checks on every single HTTP and WebSocket route.
         </div>
       </div>
 
       {/* Matrix Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 font-semibold text-slate-900 text-sm flex items-center justify-between">
+      <div className="bg-[#071729] rounded-xl border border-[#12324F] shadow-card overflow-hidden">
+        <div className="p-4 border-b border-[#10283E] font-semibold text-[#F4F8FF] text-sm flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <Key className="w-4 h-4 text-blue-600" />
+            <Key className="w-4 h-4 text-[#00A3FF]" />
             Granular Permission Matrix
           </span>
-          <span className="text-xs text-slate-400">13 Core Capabilities</span>
+          <span className="text-xs text-[#718BA6] font-mono">13 Core Capabilities</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 text-slate-700 text-xs uppercase border-b border-slate-200 font-bold">
-              <tr>
-                <th className="px-4 py-3 min-w-[240px]">Permission / Capability</th>
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-[#0C2137] text-[#718BA6] font-mono font-bold text-[10px] uppercase border-b border-[#12324F]">
+                <th className="py-3 px-4 min-w-[280px]">Permission / Capability</th>
                 {roles.map(r => (
-                  <th key={r.role} className="px-4 py-3 text-center">
+                  <th key={r.role} className="py-3 px-4 text-center font-bold" style={{ color: r.color }}>
                     {r.label}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-[#10283E] font-mono">
               {capabilities.map((c) => (
-                <tr key={c.cap} className="hover:bg-slate-50/60">
-                  <td className="px-4 py-3.5">
-                    <div className="font-semibold text-slate-900">{c.label}</div>
-                    <div className="font-mono text-xs text-blue-600 font-medium">{c.cap}</div>
-                    <div className="text-xs text-slate-400 mt-0.5">{c.desc}</div>
+                <tr key={c.cap} className="hover:bg-[#0B2C4C]/40 transition-colors">
+                  <td className="py-3.5 px-4 font-sans">
+                    <div className="font-bold text-[#F4F8FF] text-xs">{c.label}</div>
+                    <div className="font-mono text-[11px] text-[#7FB6E8] font-medium mt-0.5">{c.cap}</div>
+                    <div className="text-[11px] text-[#718BA6] mt-0.5">{c.desc}</div>
                   </td>
                   {roles.map(r => {
                     const hasCap = r.caps.includes(c.cap);
                     return (
-                      <td key={r.role} className="px-4 py-3.5 text-center">
+                      <td key={r.role} className="py-3.5 px-4 text-center">
                         {hasCap ? (
-                          <span className="inline-flex items-center justify-center w-6 h-6 bg-emerald-100 text-emerald-700 rounded-full font-bold">
+                          <span className="inline-flex items-center justify-center w-6 h-6 bg-[#0A2926] text-[#00D6B5] border border-[#00D6B5]/40 rounded-full font-bold shadow-[0_0_8px_rgba(0,214,181,0.25)]">
                             <Check className="w-3.5 h-3.5 stroke-[3]" />
                           </span>
                         ) : (
-                          <span className="inline-flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-400 rounded-full">
-                            <X className="w-3.5 h-3.5" />
+                          <span className="inline-flex items-center justify-center w-6 h-6 bg-[#061321] text-[#52657A] border border-[#12324F] rounded-full">
+                            <X className="w-3 h-3" />
                           </span>
                         )}
                       </td>

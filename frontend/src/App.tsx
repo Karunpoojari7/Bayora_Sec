@@ -40,6 +40,7 @@ import { AuditLogsPage } from './pages/admin/AuditLogsPage';
 import { EvidenceAdminPage } from './pages/admin/EvidenceAdminPage';
 import { ResourceGovernorAdminPage } from './pages/admin/ResourceGovernorAdminPage';
 import { PassportAdminPage } from './pages/admin/PassportAdminPage';
+import { SystemSettingsPage } from './pages/admin/SystemSettingsPage';
 
 import { Evaluation, UserProfile } from './types';
 import { api } from './services/api';
@@ -261,6 +262,7 @@ function AppContent() {
         <Route path="evidence" element={<EvidenceAdminPage evaluationId={selectedEvalId} />} />
         <Route path="governor" element={<ResourceGovernorAdminPage evaluationId={selectedEvalId} />} />
         <Route path="passport" element={<PassportAdminPage evaluationId={selectedEvalId} />} />
+        <Route path="settings" element={<SystemSettingsPage />} />
       </Route>
 
       {/* Fallback Catch-all */}

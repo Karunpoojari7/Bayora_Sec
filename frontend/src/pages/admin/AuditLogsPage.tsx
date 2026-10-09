@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileText, Shield, Search, Filter, RefreshCw, Lock, UserCheck } from 'lucide-react';
+import { FileText, Shield, Search, Filter, RefreshCw, Lock, UserCheck, CheckCircle2, ChevronRight } from 'lucide-react';
 import { api } from '../../services/api';
 
 interface AuditLogsPageProps {
@@ -10,6 +10,7 @@ export const AuditLogsPage: React.FC<AuditLogsPageProps> = ({ evaluationId }) =>
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filterType, setFilterType] = useState('ALL');
 
   useEffect(() => {
     loadLogs();
@@ -28,82 +29,104 @@ export const AuditLogsPage: React.FC<AuditLogsPageProps> = ({ evaluationId }) =>
   };
 
   const filteredLogs = logs.filter(l => {
-    const s = search.toLowerCase();
-    return !search ||
-      (l.event_type && l.event_type.toLowerCase().includes(s)) ||
-      (l.actor && l.actor.toLowerCase().includes(s)) ||
-      (l.event_id && l.event_id.toLowerCase().includes(s));
+    const matchesSearch = !search ||
+      (l.event_type && l.event_type.toLowerCase().includes(search.toLowerCase())) ||
+      (l.actor && l.actor.toLowerCase().includes(search.toLowerCase())) ||
+      (l.event_hash && l.event_hash.toLowerCase().includes(search.toLowerCase())) ||
+      (l.id && l.id.toLowerCase().includes(search.toLowerCase()));
+
+    const matchesType = filterType === 'ALL' || l.event_type === filterType;
+    return matchesSearch && matchesType;
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Security Audit Logs & Ledger</h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-black text-[#F4F8FF] tracking-tight">Security Audit Logs & Ledger</h1>
+          <p className="text-[#718BA6] text-xs mt-1">
             Tamper-evident audit trail of authentication events, policy alterations, probe executions, and disclosures.
           </p>
         </div>
         <button
           onClick={loadLogs}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 shadow-sm transition-colors"
+          className="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-[#EAF4FF] bg-[#071729] hover:bg-[#0A1D31] border border-[#12324F] hover:border-[#087BDA] rounded-lg shadow-subtle transition-all cursor-pointer"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 text-[#00A3FF] ${loading ? 'animate-spin' : ''}`} />
           Refresh Ledger
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
-        <Search className="w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Filter by event type, actor username, or event ID..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="text-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-blue-500 w-full md:w-96"
-        />
+      <div className="bg-[#071729] p-4 rounded-xl border border-[#12324F] shadow-card flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="flex items-center gap-2 w-full md:w-96">
+          <Search className="w-4 h-4 text-[#718BA6]" />
+          <input
+            type="text"
+            placeholder="Filter by event type, actor username, or hash..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full text-xs font-mono bg-[#061321] border border-[#12324F] rounded-lg px-3 py-2 text-[#EAF4FF] placeholder-[#718BA6] focus:outline-none focus:border-[#087BDA]"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {['ALL', 'EVALUATION_CREATED', 'ATTACK_SUBMITTED', 'DEFENSE_APPLIED', 'EVIDENCE_RECORDED'].map(t => (
+            <button
+              key={t}
+              onClick={() => setFilterType(t)}
+              className={`px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg transition-colors cursor-pointer ${
+                filterType === t
+                  ? 'bg-[#0753A6] text-white border border-[#00A3FF]'
+                  : 'bg-[#061321] text-[#A9C2DA] hover:text-[#EAF4FF] border border-[#12324F]'
+              }`}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Audit Log Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 font-semibold text-slate-900 text-sm flex items-center justify-between">
+      <div className="bg-[#071729] rounded-xl border border-[#12324F] shadow-card overflow-hidden">
+        <div className="p-4 border-b border-[#10283E] font-semibold text-[#F4F8FF] text-sm flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <FileText className="w-4 h-4 text-blue-600" />
+            <FileText className="w-4 h-4 text-[#00A3FF]" />
             Audit Ledger Entries ({filteredLogs.length})
           </span>
-          <span className="text-xs text-slate-400 font-mono">SHA-256 Chained</span>
+          <span className="text-xs text-[#718BA6] font-mono">SHA-256 Chained</span>
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-slate-400 text-sm">Verifying and loading audit events...</div>
+          <div className="p-12 text-center text-[#718BA6] text-xs font-mono">Verifying and loading audit events...</div>
         ) : filteredLogs.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm">No audit logs recorded for this evaluation yet.</div>
+          <div className="p-12 text-center text-[#718BA6] text-xs font-mono">No audit logs match criteria.</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold">
-                <tr>
-                  <th className="px-4 py-3">Sequence</th>
-                  <th className="px-4 py-3">Event Type</th>
-                  <th className="px-4 py-3">Actor</th>
-                  <th className="px-4 py-3">Hash Signature</th>
-                  <th className="px-4 py-3 text-right">Timestamp</th>
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="bg-[#0C2137] text-[#718BA6] font-mono font-bold text-[10px] uppercase border-b border-[#12324F]">
+                  <th className="py-3 px-4">Block #</th>
+                  <th className="py-3 px-4">Event Type</th>
+                  <th className="py-3 px-4">Subject Actor</th>
+                  <th className="py-3 px-4">Cryptographic Hash</th>
+                  <th className="py-3 px-4 text-right">Timestamp</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 font-mono text-xs">
+              <tbody className="divide-y divide-[#10283E] font-mono text-[11px]">
                 {filteredLogs.map((ev, i) => (
-                  <tr key={ev.event_id || i} className="hover:bg-slate-50/60">
-                    <td className="px-4 py-3.5 font-bold text-slate-700">#{ev.sequence_number ?? i + 1}</td>
-                    <td className="px-4 py-3.5">
-                      <span className="px-2 py-0.5 bg-blue-50 text-blue-800 rounded font-semibold">
+                  <tr key={ev.id || i} className="hover:bg-[#0B2C4C]/40 transition-colors">
+                    <td className="py-3 px-4 text-[#7FB6E8] font-bold">#{ev.event_seq ?? i + 1}</td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 bg-[#0A1D31] text-[#7FB6E8] border border-[#075AA0] rounded font-semibold text-[10px]">
                         {ev.event_type}
                       </span>
                     </td>
-                    <td className="px-4 py-3.5 text-slate-800 font-sans font-medium">{ev.actor || 'system'}</td>
-                    <td className="px-4 py-3.5 text-slate-500 truncate max-w-xs">{ev.current_hash}</td>
-                    <td className="px-4 py-3.5 text-right text-slate-400 font-sans">
+                    <td className="py-3 px-4 text-[#EAF4FF]">{ev.actor || 'system'}</td>
+                    <td className="py-3 px-4 text-[#7FB6E8] truncate max-w-xs">{ev.event_hash}</td>
+                    <td className="py-3 px-4 text-right text-[#718BA6]">
                       {new Date(ev.timestamp).toLocaleString()}
                     </td>
                   </tr>

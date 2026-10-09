@@ -2,7 +2,8 @@ import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Key, FolderKanban, Server,
-  FileText, ShieldCheck, Gauge, Award, LogOut, ChevronDown, Shield, Lock
+  FileText, ShieldCheck, Gauge, Award, LogOut, ChevronDown,
+  Shield, Lock, Bell, Settings
 } from 'lucide-react';
 import { UserProfile, Evaluation } from '../types';
 
@@ -32,80 +33,95 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { to: '/admin/audit', label: 'Audit Logs', icon: FileText },
     { to: '/admin/evidence', label: 'Evidence Verification', icon: ShieldCheck },
     { to: '/admin/governor', label: 'Resource Governance', icon: Gauge },
-    { to: '/admin/passport', label: 'Trust Passport', icon: Award, highlight: true },
+    { to: '/admin/passport', label: 'Trust Passport', icon: Award },
+    { to: '/admin/settings', label: 'System Settings', icon: Settings },
   ];
 
+  const selectedEval = evaluations.find(e => e.id === selectedEvalId) || evaluations[0];
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* Admin Top Navbar */}
-      <header className="h-16 bg-white border-b border-blue-100 flex items-center justify-between px-6 z-30 sticky top-0 shadow-subtle">
+    <div className="min-h-screen bg-[#030914] text-[#EAF4FF] flex flex-col font-sans selection:bg-[#087BFF] selection:text-white">
+      {/* Top Navigation Bar */}
+      <header className="h-16 bg-[#040B16] border-b border-[#12324F] flex items-center justify-between px-6 z-30 sticky top-0">
+        {/* Brand & Subtitle */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/25 text-white">
-            <Shield className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-[#071729] border border-[#087BDA] flex items-center justify-center shadow-[0_0_12px_rgba(8,123,218,0.4)] text-[#00A3FF]">
+            <Shield className="w-5 h-5 fill-[#00A3FF]/20" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-mono font-bold text-base tracking-wider text-slate-900">BAYORA</span>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-800 border border-blue-200 font-bold">
+              <span className="font-mono font-black text-lg tracking-wider text-[#F4F8FF]">BAYORA</span>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#0A1D31] text-[#7FB6E8] border border-[#075AA0] font-bold">
                 ADMIN CONTROL PLANE
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 hidden sm:block">Platform Governance, RBAC & Test Verification</p>
+            <p className="text-[11px] text-[#718BA6] hidden sm:block">Platform Governance, RBAC & Test Verification</p>
           </div>
         </div>
 
-        {/* Evaluation Selector & Manage Platform CTA */}
-        <div className="flex items-center gap-3">
+        {/* Evaluation Context Selector & Actions */}
+        <div className="flex items-center gap-4">
           <div className="relative">
             <select
               value={selectedEvalId}
               onChange={(e) => onSelectEval(e.target.value)}
-              className="bg-slate-50 border border-slate-200 hover:border-slate-300 text-xs font-mono font-medium text-slate-800 rounded-lg px-3 py-1.5 pr-8 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+              className="bg-[#061321] border border-[#12324F] hover:border-[#087BDA] text-xs font-mono font-medium text-[#EAF4FF] rounded-lg px-3.5 py-2 pr-8 focus:outline-none focus:ring-1 focus:ring-[#087BDA] appearance-none cursor-pointer shadow-inner min-w-[280px] max-w-[420px] truncate"
             >
               {evaluations.map((ev) => (
-                <option key={ev.id} value={ev.id}>
+                <option key={ev.id} value={ev.id} className="bg-[#061321] text-[#EAF4FF]">
                   {ev.id} — {ev.project_name} ({ev.target_model})
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+            <ChevronDown className="w-3.5 h-3.5 text-[#7FB6E8] absolute right-3 top-3 pointer-events-none" />
           </div>
 
           <button
             onClick={() => navigate('/admin/infrastructure')}
-            className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-mono font-bold transition-all flex items-center gap-1.5 shadow-sm cursor-pointer"
+            className="px-3.5 py-2 rounded-lg bg-[#071729] hover:bg-[#0A1D31] border border-[#087BDA] text-[#7FB6E8] hover:text-[#EAF4FF] text-xs font-mono font-bold transition-all flex items-center gap-2 shadow-[0_0_10px_rgba(8,123,218,0.25)] cursor-pointer"
           >
-            <Server className="w-3.5 h-3.5" />
+            <Lock className="w-3.5 h-3.5 text-[#00A3FF]" />
             <span>MANAGE PLATFORM SECURITY</span>
           </button>
-        </div>
 
-        {/* User Info & Sign Out */}
-        <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
-          <div className="text-right hidden sm:block">
-            <div className="text-xs font-bold text-slate-900 font-mono">{currentUser.username}</div>
-            <div className="text-[10px] text-blue-700 font-bold font-mono">ADMINISTRATOR</div>
+          {/* Notification Icon */}
+          <div className="relative p-2 rounded-lg bg-[#061321] border border-[#12324F] text-[#A9C2DA] hover:text-white cursor-pointer transition-colors">
+            <Bell className="w-4 h-4" />
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF3D59] text-[9px] font-bold text-white flex items-center justify-center border border-[#040B16]">
+              2
+            </span>
           </div>
-          <button
-            onClick={onLogout}
-            title="Sign Out"
-            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg border border-transparent hover:border-red-200 transition-all cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+
+          {/* User Profile & Sign Out */}
+          <div className="flex items-center gap-3 pl-3 border-l border-[#12324F]">
+            <div className="w-8 h-8 rounded-full bg-[#087BFF] text-white font-bold text-xs flex items-center justify-center shadow-[0_0_8px_rgba(8,123,255,0.4)]">
+              {currentUser.username.charAt(0).toUpperCase()}
+            </div>
+            <div className="text-left hidden md:block">
+              <div className="text-xs font-bold text-[#F4F8FF] font-mono leading-none">{currentUser.username}</div>
+              <div className="text-[10px] text-[#7FB6E8] font-bold font-mono mt-0.5">Administrator</div>
+            </div>
+            <button
+              onClick={onLogout}
+              title="Sign Out"
+              className="p-2 text-[#718BA6] hover:text-[#FF3D59] hover:bg-[#1F0A10] rounded-lg border border-transparent hover:border-[#FF3D59]/40 transition-all cursor-pointer ml-1"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main Workspace Layout */}
-      <div className="flex flex-1">
+      {/* Main Workspace Body */}
+      <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-64 bg-white border-r border-slate-200 flex flex-col justify-between p-4 min-h-[calc(100vh-4rem)] shadow-subtle flex-shrink-0">
+        <aside className="w-64 bg-[#061120] border-r border-[#12324F] flex flex-col justify-between p-4 flex-shrink-0 overflow-y-auto">
           <div className="space-y-6">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 font-bold px-3">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[#718BA6] font-bold px-3">
                 GOVERNANCE WORKSPACE
               </span>
-              <nav className="mt-2 space-y-1">
+              <nav className="mt-2.5 space-y-1">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -113,16 +129,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       key={item.to}
                       to={item.to}
                       className={({ isActive }) =>
-                        `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
+                        `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                           isActive
-                            ? item.highlight
-                              ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 font-bold'
-                              : 'bg-blue-50 text-blue-800 font-bold border border-blue-200'
-                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                            ? 'bg-gradient-to-r from-[#0753A6] to-[#087BDA] text-[#FFFFFF] font-bold border border-[#00A3FF] shadow-[0_0_15px_rgba(0,163,255,0.35)]'
+                            : 'text-[#A9C2DA] hover:text-[#EAF4FF] hover:bg-[#0B2C4C] hover:border hover:border-[#12324F]'
                         }`
                       }
                     >
-                      <Icon className="w-4 h-4" />
+                      <Icon className="w-4 h-4 shrink-0" />
                       <span>{item.label}</span>
                     </NavLink>
                   );
@@ -130,25 +144,29 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </nav>
             </div>
 
-            {/* Zero-Trust Admin Assurance */}
-            <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-200 text-xs space-y-1.5 font-mono">
-              <div className="flex items-center gap-1.5 text-blue-800 font-bold text-[11px]">
-                <Lock className="w-3.5 h-3.5 text-blue-600" />
+            {/* Root of Trust Card */}
+            <div className="p-3.5 rounded-xl bg-[#071729] border border-[#12324F] text-xs space-y-1.5 font-mono shadow-card">
+              <div className="flex items-center gap-1.5 text-[#7FB6E8] font-bold text-[11px]">
+                <Lock className="w-3.5 h-3.5 text-[#00A3FF]" />
                 <span>ROOT OF TRUST</span>
               </div>
-              <p className="text-[10px] text-slate-600 leading-relaxed">
+              <p className="text-[10px] text-[#718BA6] leading-relaxed">
                 Platform-wide Merkle evidence verification and container capability enforcement.
               </p>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-slate-200 text-center text-[10px] font-mono text-slate-500">
-            Bayora Control Plane v1.0
+          <div className="pt-4 border-t border-[#12324F] text-[11px] font-mono space-y-1">
+            <div className="text-[#718BA6]">Bayora Control Plane v1.0</div>
+            <div className="text-[#19CDA5] font-semibold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#19CDA5] animate-pulse"></span>
+              All Systems Operational
+            </div>
           </div>
         </aside>
 
-        {/* Page Content */}
-        <main className="flex-1 p-6 md:p-8 max-w-7xl mx-auto w-full overflow-y-auto">
+        {/* Main Content Area */}
+        <main className="flex-1 bg-[#050D1A] p-6 lg:p-8 overflow-y-auto">
           <Outlet />
         </main>
       </div>

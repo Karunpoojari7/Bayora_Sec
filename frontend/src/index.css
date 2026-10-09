@@ -4,26 +4,26 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 font-sans antialiased;
-    background-color: #F8FAFC;
-    color: #0F172A;
+    @apply font-sans antialiased;
+    background-color: #030914;
+    color: #EAF4FF;
   }
 }
 
-/* Custom scrollbar for clean enterprise dashboard */
+/* Custom dark scrollbar for Midnight Blue theme */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #040B16;
 }
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #12324F;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #087BDA;
 }
 
 @keyframes fadeIn {
@@ -31,8 +31,38 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 140, 255, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(0, 140, 255, 0.45); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* Electric border glow utilities */
+.glow-border-blue {
+  border-color: #087BDA;
+  box-shadow: 0 0 12px rgba(8, 123, 218, 0.35);
+}
+
+.glow-border-cyan {
+  border-color: #00D6B5;
+  box-shadow: 0 0 12px rgba(0, 214, 181, 0.35);
+}
+
+.glow-border-red {
+  border-color: #FF3D59;
+  box-shadow: 0 0 12px rgba(255, 61, 89, 0.35);
+}
+
+.glow-border-violet {
+  border-color: #A56BFF;
+  box-shadow: 0 0 12px rgba(165, 107, 255, 0.35);
 }
 
 @media print {
