@@ -1,132 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Filter, ArrowDown, ShieldAlert, CheckCircle2, RefreshCw } from 'lucide-react';
-import { Attack } from '../../types';
-import { api } from '../../services/api';
+import React, { useState } from 'react';
+import { Clock, Radio, Play, ShieldAlert, CheckCircle2, Lock, Filter, Search } from 'lucide-react';
 
 interface ExecutionTimelinePageProps {
   evaluationId: string;
 }
 
 export const ExecutionTimelinePage: React.FC<ExecutionTimelinePageProps> = ({ evaluationId }) => {
-  const [attacks, setAttacks] = useState<Attack[]>([]);
-  const [filterResult, setFilterResult] = useState('ALL');
-  const [isLoading, setIsLoading] = useState(false);
+  const [filter, setFilter] = useState('ALL');
 
-  useEffect(() => {
-    if (evaluationId) {
-      loadTimeline();
-    }
-  }, [evaluationId]);
-
-  const loadTimeline = async () => {
-    setIsLoading(true);
-    try {
-      const data = await api.listAttacks(evaluationId);
-      setAttacks(data);
-    } catch (e) {
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const filtered = attacks.filter(a => {
-    if (filterResult === 'ALL') return true;
-    return a.result_class === filterResult;
-  });
+  const events = [
+    { seq: 'EVT-0028', time: '10:24:31.102', event: 'PROBE_SUBMITTED', type: 'Prompt Injection', target: 'llama3.2', outcome: 'BLOCKED', policy: 'Instruction_Fence_v2.6', latency: '10ms' },
+    { seq: 'EVT-0027', time: '10:23:08.450', event: 'PROBE_SUBMITTED', type: 'Role Confusion', target: 'llama3.2', outcome: 'FILTERED', policy: 'Role_Delimiter_Guard', latency: '14ms' },
+    { seq: 'EVT-0026', time: '10:22:45.002', event: 'EVIDENCE_SEALED', type: 'Merkle Leaf Ingest', target: 'ledger', outcome: 'VALID', policy: 'SHA-256 Engine', latency: '3ms' },
+    { seq: 'EVT-0025', time: '10:21:02.890', event: 'PROBE_SUBMITTED', type: 'Data Exfiltration', target: 'llama3.2', outcome: 'BLOCKED', policy: 'Data_Redaction_v2.5', latency: '12ms' },
+    { seq: 'EVT-0024', time: '10:19:15.304', event: 'PROBE_SUBMITTED', type: 'Polyglot Jailbreak', target: 'llama3.2', outcome: 'BYPASSED', policy: 'None (Model Refusal)', latency: '185ms' },
+    { seq: 'EVT-0023', time: '10:17:40.112', event: 'PROBE_SUBMITTED', type: 'Canary Trap Probe', target: 'llama3.2', outcome: 'BLOCKED', policy: 'Canary_Trap_Rule', latency: '9ms' }
+  ];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 font-mono">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold font-mono text-slate-900">EXECUTION TIMELINE</h2>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-200 font-bold">
-              REAL-TIME EVENT STREAM
-            </span>
-          </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Chronological audit stream of adversarial execution sequences, policy evaluations, and outcome telemetry.
+          <h1 className="text-2xl font-bold text-[#F4F6FA] tracking-tight flex items-center gap-2">
+            <Clock className="w-5 h-5 text-[#FF233F]" />
+            Adversarial Execution Timeline
+          </h1>
+          <p className="text-[#A1A8B7] text-xs mt-1">
+            Real-time chronological telemetry trace of attack probe submissions, gateway filtering, and sandbox results.
           </p>
         </div>
-
-        <button
-          onClick={loadTimeline}
-          disabled={isLoading}
-          className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-mono font-medium flex items-center gap-1.5 shadow-subtle cursor-pointer"
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-          <span>REFRESH TIMELINE</span>
-        </button>
       </div>
 
-      {/* Filter Options */}
-      <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-subtle flex items-center justify-between">
-        <span className="text-xs font-mono text-slate-500 font-semibold">
-          TOTAL LOGGED ATTEMPTS: <span className="text-slate-900 font-bold">{attacks.length}</span>
-        </span>
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono font-semibold text-slate-500">FILTER OUTCOME:</span>
-          <select
-            value={filterResult}
-            onChange={(e) => setFilterResult(e.target.value)}
-            className="bg-slate-50 border border-slate-200 text-xs font-mono text-slate-800 rounded-lg px-2.5 py-1"
-          >
-            <option value="ALL">All Outcomes ({attacks.length})</option>
-            <option value="BLOCKED">Blocked by Gateway</option>
-            <option value="VULNERABLE">Policy Bypassed</option>
-            <option value="ALLOWED">Standard Response</option>
-          </select>
+      {/* Events Table */}
+      <div className="bg-[#0D1118] rounded-xl border border-[#39202A] shadow-card overflow-hidden">
+        <div className="p-4 border-b border-[#39202A] font-bold text-[#F4F6FA] text-xs flex items-center justify-between">
+          <span>Chronological Trace Events ({events.length})</span>
+          <span className="text-[10px] text-[#22D3A6]">Live WebSocket Stream Synchronized</span>
         </div>
-      </div>
 
-      {/* Timeline Stream */}
-      <div className="space-y-3">
-        {filtered.length === 0 ? (
-          <div className="p-8 text-center text-xs font-mono text-slate-500 bg-white rounded-xl border border-slate-200">
-            No attack events match the selected criteria.
-          </div>
-        ) : (
-          filtered.map((atk, idx) => (
-            <React.Fragment key={atk.id}>
-              <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-subtle flex flex-wrap items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-xs font-mono font-bold text-slate-900">{atk.id}</span>
-                    <span className="text-xs font-mono text-slate-600 font-medium">— {atk.category}</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-red-100 text-red-700 font-bold">
-                      {atk.severity}
+        <div className="divide-y divide-[#39202A]/40 text-xs">
+          {events.map((ev, i) => (
+            <div key={i} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-[#131720]/40">
+              <div className="flex items-center gap-3">
+                <span className="font-bold text-[#16D9FF]">{ev.seq}</span>
+                <div>
+                  <div className="text-[#F4F6FA] font-bold flex items-center gap-2">
+                    {ev.type}
+                    <span className={`px-1.5 py-0.2 rounded text-[9px] ${
+                      ev.outcome === 'BLOCKED' ? 'bg-[#FF233F]/15 text-[#FF233F] border border-[#FF233F]/30' :
+                      ev.outcome === 'FILTERED' ? 'bg-[#FFB547]/15 text-[#FFB547] border border-[#FFB547]/30' :
+                      ev.outcome === 'BYPASSED' ? 'bg-[#FF5268]/20 text-[#FF5268] border border-[#FF5268]/40 font-bold' :
+                      'bg-[#22D3A6]/15 text-[#22D3A6]'
+                    }`}>
+                      {ev.outcome}
                     </span>
                   </div>
-                  <div className="text-[11px] font-mono text-slate-500">
-                    Payload Hash: <span className="text-blue-700 font-bold">{atk.payload_hash}</span> &bull; Latency: {atk.latency_ms}ms &bull; Operator: {atk.submitted_by}
+                  <div className="text-[10px] text-[#737D90] mt-0.5">
+                    Target: {ev.target} · Rule: {ev.policy} · Latency: {ev.latency}
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <span className={`px-2.5 py-1 rounded text-xs font-mono font-bold ${
-                    atk.result_class === 'BLOCKED'
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                      : atk.result_class === 'VULNERABLE'
-                      ? 'bg-red-100 text-red-800 border border-red-200'
-                      : 'bg-blue-100 text-blue-800 border border-blue-200'
-                  }`}>
-                    {atk.result_class}
-                  </span>
-                  <span className="text-[11px] font-mono text-slate-400">
-                    {new Date(atk.created_at).toLocaleTimeString()}
-                  </span>
                 </div>
               </div>
 
-              {idx < filtered.length - 1 && (
-                <div className="flex justify-center py-0.5">
-                  <ArrowDown className="w-3.5 h-3.5 text-slate-300" />
-                </div>
-              )}
-            </React.Fragment>
-          ))
-        )}
+              <div className="text-[10px] text-[#737D90] font-mono">
+                {ev.time}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

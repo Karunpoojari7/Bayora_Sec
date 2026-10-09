@@ -7,12 +7,16 @@ import { ModelOpsLayout } from './layouts/ModelOpsLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 
 // Red Team Pages
+import { AttackDashboardPage } from './pages/red/AttackDashboardPage';
 import { CampaignsPage } from './pages/red/CampaignsPage';
 import { AttackPlaygroundPage } from './pages/red/AttackPlaygroundPage';
 import { TestLibraryPage } from './pages/red/TestLibraryPage';
 import { ExecutionTimelinePage } from './pages/red/ExecutionTimelinePage';
 import { FindingsPage } from './pages/red/FindingsPage';
 import { RegressionPage } from './pages/red/RegressionPage';
+import { PayloadVaultPage } from './pages/red/PayloadVaultPage';
+import { EvaluationReportsPage } from './pages/red/EvaluationReportsPage';
+import { SandboxStatusPage } from './pages/red/SandboxStatusPage';
 
 // Blue Team Pages
 import { DefenseOverviewPage } from './pages/blue/DefenseOverviewPage';
@@ -89,7 +93,7 @@ function AppContent() {
   const getDefaultRouteForRole = (role: string) => {
     switch (role) {
       case 'RED_TEAM':
-        return '/red-team/campaigns';
+        return '/red-team/dashboard';
       case 'BLUE_TEAM':
         return '/blue-team/overview';
       case 'MODEL_OPERATOR':
@@ -167,7 +171,8 @@ function AppContent() {
           </RequireAuth>
         }
       >
-        <Route index element={<Navigate to="campaigns" replace />} />
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<AttackDashboardPage evaluationId={selectedEvalId} />} />
         <Route path="campaigns" element={<CampaignsPage evaluationId={selectedEvalId} />} />
         <Route
           path="playground"
@@ -182,6 +187,9 @@ function AppContent() {
         <Route path="timeline" element={<ExecutionTimelinePage evaluationId={selectedEvalId} />} />
         <Route path="findings" element={<FindingsPage evaluationId={selectedEvalId} />} />
         <Route path="regression" element={<RegressionPage evaluationId={selectedEvalId} />} />
+        <Route path="vault" element={<PayloadVaultPage />} />
+        <Route path="reports" element={<EvaluationReportsPage />} />
+        <Route path="sandbox" element={<SandboxStatusPage />} />
       </Route>
 
       {/* Blue Team Workspace */}
