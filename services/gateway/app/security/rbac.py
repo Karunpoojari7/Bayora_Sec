@@ -126,6 +126,21 @@ def require_capability(required_capability: str):
         )
     return dependency
 
+def require_any_capability(capabilities: List[str]):
+    def dependency(actor: AuthContext = Depends(get_current_actor)):
+        if "admin:all" in actor.capabilities or any(c in actor.capabilities for c in capabilities):
+            return actor
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": {
+                    "code": "CAPABILITY_DENIED",
+                    "message": f"Actor role '{actor.role}' lacks required capabilities from: {capabilities}"
+                }
+            }
+        )
+    return dependency
+
 def require_role(allowed_roles: List[str]):
     def dependency(actor: AuthContext = Depends(get_current_actor)):
         if actor.role in allowed_roles or actor.role == "ADMIN":

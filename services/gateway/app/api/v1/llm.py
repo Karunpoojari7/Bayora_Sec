@@ -4,7 +4,7 @@ from app.core.database import get_db
 from app.schemas.schemas import InferenceReq, InferenceOut, SessionResetReq, SessionResetOut
 from app.services.llm_provider import get_active_llm_provider
 from app.services.policy_engine import PolicyEngine
-from app.security.rbac import require_capability, AuthContext, get_current_actor
+from app.security.rbac import require_any_capability, require_capability, AuthContext, get_current_actor
 import datetime
 import uuid
 
@@ -15,7 +15,7 @@ async def evaluate_inference(
     id: str,
     req: InferenceReq,
     db: Session = Depends(get_db),
-    actor: AuthContext = Depends(require_capability("red:evaluate"))
+    actor: AuthContext = Depends(require_any_capability(["model:operate", "red:execute"]))
 ):
     session_id = req.session_id or f"sess_{id}_{uuid.uuid4().hex[:6]}"
     
@@ -57,7 +57,7 @@ async def evaluate_inference(
 async def reset_model_session(
     id: str,
     req: SessionResetReq = None,
-    actor: AuthContext = Depends(require_capability("evaluation:control"))
+    actor: AuthContext = Depends(require_any_capability(["model:reset", "evaluation:control"]))
 ):
     session_id = req.session_id if req and req.session_id else f"sess_{id}"
     provider = await get_active_llm_provider()

@@ -11,7 +11,7 @@ from app.core.config import settings
 class AuthService:
     @staticmethod
     def seed_default_users(db: Session):
-        """Seed default demo accounts if table is empty or missing roles."""
+        """Seed default demo accounts and ensure password hashes are synchronized."""
         demo_users = [
             ("admin", "admin@bayora.corp", "admin123", "ADMIN"),
             ("red_operator", "red@bayora.corp", "red123", "RED_TEAM"),
@@ -32,6 +32,11 @@ class AuthService:
                     created_at=datetime.datetime.utcnow()
                 )
                 db.add(u)
+            else:
+                # Synchronize password hash and role
+                existing.hashed_password = get_password_hash(pwd)
+                existing.role = role
+                existing.is_active = True
         db.commit()
 
     @staticmethod

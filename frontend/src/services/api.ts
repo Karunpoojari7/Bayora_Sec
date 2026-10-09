@@ -342,6 +342,32 @@ class ApiClient {
   async getResourceFairness(id: string): Promise<ResourceFairness> {
     return this.request<ResourceFairness>(`/evaluations/${id}/fairness`);
   }
+
+  // --- Admin & Governance ---
+  async listUsers(): Promise<any[]> {
+    return this.request<any[]>('/auth/users');
+  }
+
+  async createUser(data: { username: string; email?: string; password: string; role: string }): Promise<any> {
+    return this.request<any>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async runRegressionComparison(id: string, versionA: string, versionB: string) {
+    return this.request<any>(`/evaluations/${id}/regression-test`, {
+      method: 'POST',
+      body: JSON.stringify({ policy_version_a: versionA, policy_version_b: versionB }),
+    });
+  }
+
+  async requestDisclosure(id: string, attackId: string, justification: string) {
+    return this.request<any>(`/evaluations/${id}/disclosure-request`, {
+      method: 'POST',
+      body: JSON.stringify({ attack_id: attackId, justification }),
+    });
+  }
 }
 
 export const api = new ApiClient();
