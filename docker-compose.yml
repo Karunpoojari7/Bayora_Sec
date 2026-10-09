@@ -1,0 +1,159 @@
+services:
+
+  gateway:
+    build: ./services/gateway
+    ports:
+      - "8080:8000"
+    environment:
+      DATABASE_URL: postgresql://bayora:bayora_dev_only@postgres:5432/bayora
+      REDIS_URL: redis://redis:6379/0
+      RED_SHARED_TOKEN: red-demo-token
+      BLUE_SHARED_TOKEN: blue-demo-token
+      ADMIN_SHARED_TOKEN: admin-demo-token
+      LLM_URL: http://llm:8000
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      llm:
+        condition: service_started
+    networks:
+      - red_net
+      - blue_net
+      - llm_net
+      - data_net
+      - control_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: false
+    tmpfs:
+      - /tmp:size=32m
+    mem_limit: 512m
+    cpus: "1.0"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - gateway
+    networks:
+      - control_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    mem_limit: 256m
+    cpus: "0.50"
+
+  red:
+    build: ./services/red
+    environment:
+      GATEWAY_URL: http://gateway:8000
+      RED_SHARED_TOKEN: red-demo-token
+    depends_on:
+      - gateway
+    networks:
+      - red_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    mem_limit: 256m
+    cpus: "0.50"
+
+  blue:
+    build: ./services/blue
+    environment:
+      GATEWAY_URL: http://gateway:8000
+      BLUE_SHARED_TOKEN: blue-demo-token
+    depends_on:
+      - gateway
+    networks:
+      - blue_net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp:size=16m
+    mem_limit: 256m
+    cpus: "0.50"
+
+  llm:
+    build: ./services/llm
+    environment:
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.2
+    networks:
+      - llm_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: false
+    tmpfs:
+      - /tmp:size=32m
+    mem_limit: 1g
+    cpus: "1.50"
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: bayora
+      POSTGRES_USER: bayora
+      POSTGRES_PASSWORD: bayora_dev_only
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U bayora -d bayora
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    networks:
+      - data_net
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    mem_limit: 512m
+    cpus: "1.0"
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save "" --appendonly no
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    networks:
+      - data_net
+    mem_limit: 256m
+    cpus: "0.50"
+
+networks:
+  red_net:
+    internal: true
+  blue_net:
+    internal: true
+  llm_net:
+    internal: true
+  data_net:
+    internal: true
+  control_net:
+
+volumes:
+  pgdata:
