@@ -15,12 +15,17 @@ import { FindingsPage } from './pages/red/FindingsPage';
 import { RegressionPage } from './pages/red/RegressionPage';
 
 // Blue Team Pages
+import { DefenseOverviewPage } from './pages/blue/DefenseOverviewPage';
 import { LiveAlertsPage } from './pages/blue/LiveAlertsPage';
 import { DefensePoliciesPage } from './pages/blue/DefensePoliciesPage';
 import { DetectionRulesPage } from './pages/blue/DetectionRulesPage';
 import { PolicySimulatorPage } from './pages/blue/PolicySimulatorPage';
 import { DeploymentHistoryPage } from './pages/blue/DeploymentHistoryPage';
 import { RegressionResultsPage } from './pages/blue/RegressionResultsPage';
+import { ThreatIntelPage } from './pages/blue/ThreatIntelPage';
+import { EvidenceMonitorPage } from './pages/blue/EvidenceMonitorPage';
+import { ResponsePlaybooksPage } from './pages/blue/ResponsePlaybooksPage';
+import { SystemHealthPage } from './pages/blue/SystemHealthPage';
 
 // Model Ops Pages
 import { ModelPlaygroundPage } from './pages/model/ModelPlaygroundPage';
@@ -86,7 +91,7 @@ function AppContent() {
       case 'RED_TEAM':
         return '/red-team/campaigns';
       case 'BLUE_TEAM':
-        return '/blue-team/alerts';
+        return '/blue-team/overview';
       case 'MODEL_OPERATOR':
         return '/model-ops/playground';
       case 'AUDITOR':
@@ -194,13 +199,18 @@ function AppContent() {
           </RequireAuth>
         }
       >
-        <Route index element={<Navigate to="alerts" replace />} />
+        <Route index element={<Navigate to="overview" replace />} />
+        <Route path="overview" element={<DefenseOverviewPage evaluationId={selectedEvalId} />} />
         <Route path="alerts" element={<LiveAlertsPage evaluationId={selectedEvalId} />} />
         <Route path="policies" element={<DefensePoliciesPage evaluationId={selectedEvalId} />} />
         <Route path="rules" element={<DetectionRulesPage evaluationId={selectedEvalId} />} />
         <Route path="simulator" element={<PolicySimulatorPage evaluationId={selectedEvalId} />} />
         <Route path="deployments" element={<DeploymentHistoryPage evaluationId={selectedEvalId} />} />
         <Route path="regression" element={<RegressionResultsPage evaluationId={selectedEvalId} />} />
+        <Route path="threat-intel" element={<ThreatIntelPage />} />
+        <Route path="evidence" element={<EvidenceMonitorPage evaluationId={selectedEvalId} />} />
+        <Route path="playbooks" element={<ResponsePlaybooksPage />} />
+        <Route path="health" element={<SystemHealthPage />} />
       </Route>
 
       {/* Model Operator Workspace */}

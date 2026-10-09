@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { History, Shield, CheckCircle2, RotateCcw, Lock, RefreshCw, UserCheck } from 'lucide-react';
-import { api } from '../../services/api';
+import React, { useState } from 'react';
+import { History, Shield, CheckCircle2, RotateCcw, Lock, UserCheck, Check } from 'lucide-react';
 
 interface DeploymentHistoryPageProps {
   evaluationId: string;
@@ -50,11 +49,9 @@ export const DeploymentHistoryPage: React.FC<DeploymentHistoryPageProps> = ({ ev
     }
   ]);
 
-  const [activeVersion, setActiveVersion] = useState('v2.1.0');
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   const handleRollback = (dep: any) => {
-    setActiveVersion(dep.version);
     setStatusMsg(`Successfully rolled back active gateway defense to ${dep.version}.`);
     setDeployments(prev => prev.map(d => ({
       ...d,
@@ -64,53 +61,57 @@ export const DeploymentHistoryPage: React.FC<DeploymentHistoryPageProps> = ({ ev
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-mono">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Policy Deployment & Audit History</h2>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-[#E8FFF5] tracking-tight flex items-center gap-2">
+            <History className="w-5 h-5 text-[#00F5A0]" />
+            Policy Deployment & Audit History
+          </h1>
+          <p className="text-[#91B8A7] text-xs mt-1">
             Immutable audit record of all policy deployments, rollback events, and cryptographic signatures.
           </p>
         </div>
       </div>
 
       {statusMsg && (
-        <div className="p-3 bg-emerald-50 text-emerald-900 text-xs rounded-xl border border-emerald-200 font-semibold">
+        <div className="p-3 bg-[#082219] text-[#00F5A0] text-xs rounded-xl border border-[#00F5A0]/40 font-semibold">
           {statusMsg}
         </div>
       )}
 
       {/* Deployment Timeline */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 font-semibold text-slate-900 text-sm flex items-center justify-between">
+      <div className="bg-[#061A13] rounded-xl border border-[#124B37] shadow-card overflow-hidden">
+        <div className="p-4 border-b border-[#124B37] font-bold text-[#E8FFF5] text-xs flex items-center justify-between">
           <span className="flex items-center gap-2">
-            <History className="w-4 h-4 text-emerald-600" />
+            <History className="w-4 h-4 text-[#00F5A0]" />
             Deployment Ledger ({deployments.length})
           </span>
-          <span className="text-xs text-slate-400">Cryptographically Chained</span>
+          <span className="text-[10px] text-[#587D6E]">Cryptographically Chained</span>
         </div>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#124B37]/40">
           {deployments.map((dep) => {
             const isActive = dep.status === 'ACTIVE';
             return (
-              <div key={dep.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/60">
+              <div key={dep.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-[#082219]/40">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold text-slate-900">{dep.version}</span>
-                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded uppercase ${
-                      isActive ? 'bg-emerald-100 text-emerald-800' :
-                      dep.status === 'ROLLED_BACK' ? 'bg-rose-100 text-rose-800' : 'bg-slate-100 text-slate-700'
+                    <span className="text-xs font-bold text-[#00F5A0]">{dep.version}</span>
+                    <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase ${
+                      isActive ? 'bg-[#00F5A0]/15 text-[#00F5A0] border border-[#00F5A0]/30' :
+                      dep.status === 'ROLLED_BACK' ? 'bg-[#FF4568]/15 text-[#FF4568] border border-[#FF4568]/30' :
+                      'bg-[#082219] text-[#587D6E]'
                     }`}>
                       {dep.status}
                     </span>
-                    <span className="font-mono text-xs text-slate-400">commit: {dep.commit_hash}</span>
+                    <span className="text-[10px] text-[#587D6E]">commit: {dep.commit_hash}</span>
                   </div>
-                  <h4 className="text-sm font-semibold text-slate-800">{dep.policy_name}</h4>
-                  <p className="text-xs text-slate-500">{dep.notes}</p>
-                  <div className="text-[11px] text-slate-400 flex items-center gap-3 pt-1">
+                  <h4 className="text-xs font-bold text-[#E8FFF5]">{dep.policy_name}</h4>
+                  <p className="text-[11px] text-[#91B8A7]">{dep.notes}</p>
+                  <div className="text-[10px] text-[#587D6E] flex items-center gap-3 pt-0.5">
                     <span className="flex items-center gap-1">
-                      <UserCheck className="w-3 h-3 text-slate-500" /> {dep.author}
+                      <UserCheck className="w-3 h-3 text-[#587D6E]" /> {dep.author}
                     </span>
                     <span>{new Date(dep.timestamp).toLocaleString()}</span>
                   </div>
@@ -118,15 +119,15 @@ export const DeploymentHistoryPage: React.FC<DeploymentHistoryPageProps> = ({ ev
 
                 <div>
                   {isActive ? (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold rounded-lg">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Active on Gateway
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#082219] text-[#00F5A0] border border-[#00F5A0] text-xs font-bold rounded-lg shadow-[0_0_10px_rgba(0,245,160,0.2)]">
+                      <Check className="w-4 h-4 text-[#00F5A0]" /> Active on Gateway
                     </span>
                   ) : (
                     <button
                       onClick={() => handleRollback(dep)}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors border border-slate-200"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-[#91B8A7] hover:text-[#E8FFF5] bg-[#051811] hover:bg-[#082219] rounded-lg transition-colors border border-[#124B37] cursor-pointer"
                     >
-                      <RotateCcw className="w-3.5 h-3.5" />
+                      <RotateCcw className="w-3.5 h-3.5 text-[#00F5A0]" />
                       Rollback to {dep.version}
                     </button>
                   )}
