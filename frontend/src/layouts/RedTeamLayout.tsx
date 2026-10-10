@@ -3,7 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Flame, BookOpen, Swords, Clock,
   ShieldAlert, Database, FileText, Server, LogOut,
-  ChevronDown, Bell, Shield, Lock, Radio
+  ChevronDown, Bell, Shield, Globe, Radio
 } from 'lucide-react';
 import { UserProfile, Evaluation } from '../types';
 
@@ -36,74 +36,92 @@ export const RedTeamLayout: React.FC<RedTeamLayoutProps> = ({
     { to: '/red-team/sandbox', label: 'Sandbox Status', icon: Server },
   ];
 
+  const currentEval = evaluations.find(e => e.id === selectedEvalId) || evaluations[0];
+
   return (
-    <div className="min-h-screen bg-[#050607] text-[#F4F6FA] flex flex-col font-sans selection:bg-[#FF233F] selection:text-white">
+    <div className="min-h-screen bg-[#06080d] text-[#e2e8f0] flex flex-col font-sans selection:bg-[#ef4444] selection:text-white">
       {/* Top Header Navbar */}
-      <header className="h-16 bg-[#08090D] border-b border-[#39202A] flex items-center justify-between px-6 z-30 sticky top-0">
+      <header className="h-16 bg-[#07090e] border-b border-[#1f141b] flex items-center justify-between px-5 z-30 sticky top-0">
         {/* Brand & Subtitle */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#0D1118] border border-[#FF233F] flex items-center justify-center shadow-[0_0_12px_rgba(255,35,63,0.4)] text-[#FF233F]">
-            <Radio className="w-5 h-5 fill-[#FF233F]/20 animate-pulse" />
+        <div className="flex items-center gap-3.5">
+          <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-[#2a0b12] to-[#120508] border border-[#ef4444]/60 flex items-center justify-center shadow-[0_0_15px_rgba(239,68,68,0.35)] text-[#ef4444]">
+            <Shield className="w-5 h-5 fill-[#ef4444]/20 text-[#ef4444]" />
+            <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-red-500/20 pointer-events-none" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-mono font-black text-lg tracking-wider text-[#F4F6FA]">BAYORA</span>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-[#131720] text-[#FF233F] border border-[#39202A] font-bold">
+            <div className="flex items-center gap-2.5">
+              <span className="font-mono font-black text-lg tracking-wider text-white">BAYORA</span>
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-[#1c080d] text-[#ff3355] border border-[#ff3355]/40 font-bold tracking-wider">
                 RED TEAM OPERATIONS
               </span>
             </div>
-            <p className="text-[11px] text-[#737D90] hidden sm:block">Adversarial AI Safety & Exploit Testing Lab</p>
+            <p className="text-[11px] text-[#78859b] font-medium hidden sm:block leading-tight">
+              Adversarial AI Safety & Exploit Testing Lab
+            </p>
           </div>
         </div>
 
-        {/* Evaluation Context Selector & Launch Action */}
-        <div className="flex items-center gap-4">
+        {/* Center: Evaluation Selector & Right Profile/Status */}
+        <div className="flex items-center gap-3.5">
+          {/* Active Evaluation Context Selector Dropdown */}
           <div className="relative">
             <select
               value={selectedEvalId}
               onChange={(e) => onSelectEval(e.target.value)}
-              className="bg-[#090B10] border border-[#39202A] hover:border-[#FF233F] text-xs font-mono font-medium text-[#F4F6FA] rounded-lg px-3.5 py-2 pr-8 focus:outline-none focus:ring-1 focus:ring-[#FF233F] appearance-none cursor-pointer shadow-inner min-w-[280px] max-w-[420px] truncate"
+              className="bg-[#0b0f19] border border-[#221620] hover:border-[#ef4444]/60 text-xs font-mono font-medium text-[#d4dde8] rounded-lg pl-3.5 pr-8 py-2 focus:outline-none focus:ring-1 focus:ring-[#ef4444] appearance-none cursor-pointer shadow-inner min-w-[280px] md:min-w-[360px] max-w-[440px] truncate transition-colors"
             >
-              {evaluations.map((ev) => (
-                <option key={ev.id} value={ev.id} className="bg-[#090B10] text-[#F4F6FA]">
-                  {ev.id} — {ev.project_name} ({ev.target_model})
+              {evaluations.length > 0 ? (
+                evaluations.map((ev) => (
+                  <option key={ev.id} value={ev.id} className="bg-[#0b0f19] text-[#e2e8f0]">
+                    {ev.id} — {ev.project_name} ({ev.target_model})
+                  </option>
+                ))
+              ) : (
+                <option value="BAY-2026-89835" className="bg-[#0b0f19] text-[#e2e8f0]">
+                  BAY-2026-89835 — Llama-3.2 Safety Benchmark '26 (llama3.2)
                 </option>
-              ))}
+              )}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-[#FF233F] absolute right-3 top-3 pointer-events-none" />
+            <ChevronDown className="w-4 h-4 text-[#8a96a8] absolute right-2.5 top-2.5 pointer-events-none" />
           </div>
 
-          <button
-            onClick={() => navigate('/red-team/campaigns')}
-            className="px-3.5 py-2 rounded-lg bg-[#0D1118] hover:bg-[#131720] border border-[#FF233F] text-[#FF233F] hover:text-[#F4F6FA] text-xs font-mono font-bold transition-all flex items-center gap-2 shadow-[0_0_10px_rgba(255,35,63,0.25)] cursor-pointer"
-          >
-            <Flame className="w-3.5 h-3.5 text-[#FF233F]" />
-            <span>LAUNCH CAMPAIGN</span>
-          </button>
+          {/* Sandbox Health Indicator */}
+          <div className="hidden lg:flex items-center gap-2.5 bg-[#0b0f19] border border-[#17212f] px-3.5 py-1.5 rounded-lg">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+            </span>
+            <div className="text-left leading-tight">
+              <div className="text-xs font-semibold text-white">Sandbox Online</div>
+              <div className="text-[10px] text-[#78859b]">4/4 workers healthy</div>
+            </div>
+          </div>
 
           {/* Notification Icon */}
-          <div className="relative p-2 rounded-lg bg-[#090B10] border border-[#39202A] text-[#A1A8B7] hover:text-white cursor-pointer transition-colors">
+          <div className="relative p-2 rounded-lg bg-[#0b0f19] border border-[#221620] text-[#94a3b8] hover:text-white cursor-pointer transition-colors">
             <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#FF233F] text-[9px] font-bold text-white flex items-center justify-center border border-[#08090D]">
+            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#ef4444] text-[9px] font-bold text-white flex items-center justify-center border border-[#07090e]">
               3
             </span>
           </div>
 
           {/* User Profile & Sign Out */}
-          <div className="flex items-center gap-3 pl-3 border-l border-[#39202A]">
-            <div className="w-8 h-8 rounded-full bg-[#FF233F] text-white font-bold text-xs flex items-center justify-center shadow-[0_0_8px_rgba(255,35,63,0.4)]">
-              {currentUser.username.charAt(0).toUpperCase()}
+          <div className="flex items-center gap-2.5 pl-3 border-l border-[#1f141b]">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#dc2626] to-[#ef4444] text-white font-bold text-xs flex items-center justify-center shadow-[0_0_10px_rgba(239,68,68,0.4)] ring-1 ring-red-400/30">
+              {currentUser.username ? currentUser.username.charAt(0).toUpperCase() : 'R'}
             </div>
             <div className="text-left hidden md:block">
-              <div className="text-xs font-bold text-[#F4F6FA] font-mono leading-none">{currentUser.username}</div>
-              <div className="text-[10px] text-[#FF233F] font-bold font-mono mt-0.5">Red Operator</div>
+              <div className="text-xs font-bold text-white font-mono leading-none">
+                {currentUser.username || 'red_operator'}
+              </div>
+              <div className="text-[10px] text-[#ef4444] font-bold font-mono mt-0.5">Red Team</div>
             </div>
             <button
               onClick={onLogout}
               title="Sign Out"
-              className="p-2 text-[#737D90] hover:text-[#FF233F] hover:bg-[#1F0A10] rounded-lg border border-transparent hover:border-[#FF233F]/40 transition-all cursor-pointer ml-1"
+              className="p-1.5 text-[#64748b] hover:text-[#ef4444] hover:bg-[#1a080d] rounded-lg border border-transparent hover:border-[#ef4444]/40 transition-all cursor-pointer ml-1"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -112,13 +130,13 @@ export const RedTeamLayout: React.FC<RedTeamLayoutProps> = ({
       {/* Main Workspace Body */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar */}
-        <aside className="w-64 bg-[#08090D] border-r border-[#39202A] flex flex-col justify-between p-4 flex-shrink-0 overflow-y-auto">
-          <div className="space-y-5">
+        <aside className="w-60 bg-[#07090e] border-r border-[#1f141b] flex flex-col justify-between p-3.5 flex-shrink-0 overflow-y-auto">
+          <div className="space-y-4">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-wider text-[#737D90] font-bold px-3">
-                OFFENSIVE WORKSPACE
+              <span className="text-[10px] font-mono uppercase tracking-wider text-[#64748b] font-bold px-2">
+                RED TEAM WORKSPACE
               </span>
-              <nav className="mt-2.5 space-y-1">
+              <nav className="mt-2 space-y-1">
                 {navItems.map((item) => {
                   const Icon = item.icon;
                   return (
@@ -126,14 +144,14 @@ export const RedTeamLayout: React.FC<RedTeamLayoutProps> = ({
                       key={item.to}
                       to={item.to}
                       className={({ isActive }) =>
-                        `w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+                        `w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                           isActive
-                            ? 'bg-gradient-to-r from-[#3D0A14] to-[#601222] text-[#FFFFFF] font-bold border border-[#FF233F] shadow-[0_0_15px_rgba(255,35,63,0.35)]'
-                            : 'text-[#A1A8B7] hover:text-[#F4F6FA] hover:bg-[#131720] hover:border hover:border-[#39202A]'
+                            ? 'bg-gradient-to-r from-[#2c0b14] to-[#1a070c] text-white font-semibold border border-[#ef4444] shadow-[0_0_14px_rgba(239,68,68,0.25)]'
+                            : 'text-[#8c9baeff] hover:text-white hover:bg-[#0f1420] hover:border hover:border-[#1f141b]'
                         }`
                       }
                     >
-                      <Icon className="w-4 h-4 shrink-0 text-[#FF233F]" />
+                      <Icon className="w-4 h-4 shrink-0 text-[#ef4444]" />
                       <span>{item.label}</span>
                     </NavLink>
                   );
@@ -141,29 +159,55 @@ export const RedTeamLayout: React.FC<RedTeamLayoutProps> = ({
               </nav>
             </div>
 
-            {/* Confidential Payload Vault Card */}
-            <div className="p-3.5 rounded-xl bg-[#0D1118] border border-[#39202A] text-xs space-y-1.5 font-mono shadow-card">
-              <div className="flex items-center gap-1.5 text-[#FF5268] font-bold text-[11px]">
-                <Lock className="w-3.5 h-3.5 text-[#FF233F]" />
-                <span>CONFIDENTIAL VAULT</span>
+            {/* Operation Status Card */}
+            <div className="p-3 rounded-xl bg-[#0b0f19] border border-[#1f141b] space-y-2 font-mono shadow-sm">
+              <span className="text-[10px] font-bold text-[#64748b] uppercase tracking-wider">
+                OPERATION STATUS
+              </span>
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-lg bg-[#250910] border border-[#ef4444]/40 flex items-center justify-center text-[#ef4444] shrink-0">
+                  <Globe className="w-4 h-4 text-[#ef4444]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[11px] font-bold text-[#ef4444] leading-tight">Active Campaign</div>
+                  <div className="text-xs font-semibold text-white truncate">Prompt Injection Suite</div>
+                  <div className="text-[10px] text-emerald-400 flex items-center gap-1.5 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Running • 85.7% complete
+                  </div>
+                </div>
               </div>
-              <p className="text-[10px] text-[#737D90] leading-relaxed">
-                Raw exploit payloads vaulted. Blue Team telemetry is strictly sanitized by default.
-              </p>
+
+              {/* Status Telemetry List */}
+              <div className="pt-2 border-t border-[#17212f] space-y-1.5 text-[10px]">
+                <div className="flex items-center gap-2 text-[#94a3b8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Gateway Connected</span>
+                </div>
+                <div className="flex items-center gap-2 text-[#94a3b8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Target Sandbox (llama3.2)</span>
+                </div>
+                <div className="flex items-center gap-2 text-[#94a3b8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Evidence Ledger</span>
+                </div>
+                <div className="flex items-center gap-2 text-[#94a3b8]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Telemetry Streaming</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-[#39202A] text-[11px] font-mono space-y-1">
-            <div className="text-[#737D90]">Bayora Red Team Engine v1.0</div>
-            <div className="text-[#22D3A6] font-semibold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#22D3A6] animate-pulse"></span>
-              Sandbox Isolated (red_net)
-            </div>
+          <div className="pt-3 border-t border-[#1f141b] text-[10px] font-mono space-y-0.5 text-[#64748b]">
+            <div className="text-[#8c9baeff] font-medium">Bayora Red Team v2.1.0</div>
+            <div>Restricted Use • Authorized Testing Only</div>
           </div>
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 bg-[#050607] p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 bg-[#06080d] p-5 lg:p-6 overflow-y-auto">
           <Outlet />
         </main>
       </div>

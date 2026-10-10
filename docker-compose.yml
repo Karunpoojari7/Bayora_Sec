@@ -44,10 +44,6 @@ services:
       - gateway
     networks:
       - control_net
-    security_opt:
-      - no-new-privileges:true
-    cap_drop:
-      - ALL
     mem_limit: 256m
     cpus: "0.50"
 
